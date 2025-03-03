@@ -46,7 +46,7 @@ export const PROJECTS = [
     image: project4,
     description:
       "Developing a Retrieval-Augmented Generation (RAG) pipeline leveraging Llama Stack to parse, vectorize, and query patent XML files, providing high-relevance document retrieval and dynamic, context-driven answers. Integrating open-source LLM models and a vector database (AWS) to handle large volumes of patent text, enabling semantically rich searching and automated patent analysis.",
-    technologies: ["HTML", "Python", "C++", "UI Development"],
+    technologies: ["Python", "llama-stack", "vLLM", "FAISS", "Inference Models"],
   },
   {
     title: "Calico Smartlabs",
