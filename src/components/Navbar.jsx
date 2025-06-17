@@ -9,7 +9,7 @@ const Navbar = () => {
       </div>
       <div className="m-8 flex items-center justify-center gap-4 text-2xl">
         {/* Resume Download Button (Google Drive Direct Download) */}
-        <a href="https://docs.google.com/document/d/1PON1E6uv-rMAfIrXJ8CFHTz5B-M8IMhQorJZckXIbcw/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <a href="https://docs.google.com/document/d/18FopZF4uUIXer6OQPMbjR_3htXRzw8q0/edit?usp=sharing&ouid=103007210083699553841&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">
           <FaFilePdf className="hover:text-red-600 transition duration-300" />
         </a>
         <a href="https://www.linkedin.com/in/rugved-zarkar-96878b2a4" target="_blank" rel="noopener noreferrer">
