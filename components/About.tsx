@@ -75,7 +75,7 @@ export default function About() {
             />
             <div className="relative bg-card rounded-3xl p-4 shadow-2xl">
               <ImageWithFallback
-                src="../assets/background.png"
+                src="/background.png"
                 alt="Rugved Zarkar Profile Photo"
                 className="w-full h-96 object-cover rounded-2xl"
               />

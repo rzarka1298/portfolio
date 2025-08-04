@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,6 +79,49 @@ serve(async (req) => {
           JSON.stringify({ error: 'Failed to save contact' }),
           { status: 500, headers: corsHeaders }
         )
+      }
+
+      // Send email notification using Gmail SMTP
+      try {
+        const gmailUser = Deno.env.get('GMAIL_USER') // your Gmail address
+        const gmailPass = Deno.env.get('GMAIL_APP_PASSWORD') // Gmail App Password
+        
+        if (gmailUser && gmailPass) {
+          const client = new SMTPClient({
+            connection: {
+              hostname: 'smtp.gmail.com',
+              port: 587,
+              tls: true,
+              auth: {
+                username: gmailUser,
+                password: gmailPass,
+              },
+            },
+          })
+
+          await client.send({
+            from: gmailUser,
+            to: 'rugvedzarkar@gmail.com',
+            subject: `Portfolio Contact: ${subject}`,
+            content: 'text/html',
+            html: `
+              <h2>New Contact Form Submission</h2>
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Subject:</strong> ${subject}</p>
+              <p><strong>Message:</strong></p>
+              <p>${message.replace(/\n/g, '<br>')}</p>
+              <hr>
+              <p><em>Submitted at: ${new Date().toLocaleString()}</em></p>
+            `,
+          })
+
+          await client.close()
+          console.log('Email sent successfully via Gmail SMTP')
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError)
+        // Don't fail the request if email fails
       }
 
       return new Response(
