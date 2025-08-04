@@ -104,11 +104,12 @@ export default function Projects() {
   }, []);
 
   const trackProjectView = async (project: typeof projects[0]) => {
-    // Temporarily disabled to prevent 404 errors
-    console.log('Project viewed:', project.title);
-    /*
+    // For now, just log project views since we don't have the project-view endpoint
+    console.log('📊 Project viewed:', project.title);
+    
+    // Alternative: Track as a regular visit with project info
     try {
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/project-view`, {
+      fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/visit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,22 +117,13 @@ export default function Projects() {
           'apikey': publicAnonKey
         },
         body: JSON.stringify({
-          projectId: project.id.toString(),
-          projectTitle: project.title
+          page: `/project/${project.id}`,
+          referrer: 'project-gallery'
         })
       });
-
-      if (response.ok) {
-        const { viewCount } = await response.json();
-        setProjectViews(prev => ({
-          ...prev,
-          [project.id]: viewCount
-        }));
-      }
     } catch (error) {
       console.error('Failed to track project view:', error);
     }
-    */
   };
 
   return (

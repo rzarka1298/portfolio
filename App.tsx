@@ -48,9 +48,6 @@ export default function App() {
           }
         };
 
-        // Temporarily disabled to prevent 404 errors
-        // Will track visits when API endpoints are fixed
-        /*
         await fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/visit`, {
           method: 'POST',
           headers: {
@@ -63,7 +60,6 @@ export default function App() {
             referrer: parseReferrer(referrer)
           })
         });
-        */
 
         console.log('📊 Portfolio visit tracked:', { 
           page: window.location.pathname, 

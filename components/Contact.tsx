@@ -33,17 +33,19 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      // For now, simulate successful submission since the function endpoint is having issues
-      // The form data would normally be sent to: /server/api/contact
-      console.log('Contact form submission:', formData);
-      
-      // Simulate a small delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success (in production, this would happen after actual API call)
-      const result = { success: true, id: crypto.randomUUID() };
+      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/server/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${publicAnonKey}`,
+          'apikey': publicAnonKey
+        },
+        body: JSON.stringify(formData)
+      });
 
-      if (result.success) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         toast.success("Message sent successfully! I'll get back to you soon.", {
           description: "Thank you for reaching out. I typically respond within 24 hours."
         });
@@ -57,6 +59,8 @@ export default function Contact() {
         });
 
         console.log('📧 Contact form submitted:', { id: result.id });
+      } else {
+        throw new Error(result.error || 'Failed to send message');
       }
     } catch (error) {
       console.error('Contact form error:', error);
@@ -69,9 +73,7 @@ export default function Contact() {
   };
 
   const downloadResume = () => {
-    // Track resume download - temporarily disabled
-    console.log('📄 Resume download tracked');
-    /*
+    // Track resume download
     try {
       fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/visit`, {
         method: 'POST',
@@ -88,7 +90,6 @@ export default function Contact() {
     } catch (error) {
       console.error('Failed to track resume download:', error);
     }
-    */
     
     // Download resume
     const link = document.createElement('a');
