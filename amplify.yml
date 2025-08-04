@@ -5,7 +5,7 @@ backend:
       commands:
         - nvm use 20
         - npm ci --cache .npm --prefer-offline
-        - npx ampx generate
+        #- npx ampx generate
 frontend:
   phases:
     preBuild:
