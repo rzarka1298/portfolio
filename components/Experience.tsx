@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Calendar, MapPin, Award, TrendingUp, Users, Code } from 'lucide-react';
+import { Calendar, MapPin, Award, TrendingUp, Users, Code, Briefcase, Microscope, Rocket } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 
@@ -11,23 +11,73 @@ export default function Experience() {
   const experiences = [
     {
       id: 1,
-      title: "Research Assistant",
-      company: "UMDCS SmartLabs",
-      location: "University of Maryland",
-      period: "Aug 2024 - Present",
-      type: "Research",
-      description: "Developing interactive touchscreen technology for Calico, a miniature relocatable wearable system with fast and precise locomotion for on-body interaction, actuation, and sensing.",
+      title: "Incoming Software Engineer Intern",
+      company: "IBM",
+      location: "Austin, TX",
+      period: "May 2026",
+      type: "Incoming",
+      description: "Joining the IBM Cloud Networking team to work on cloud infrastructure and networking products.",
       achievements: [
-        "Working to implement AI to allow robots to sense human host actions",
-        "Developing systems to display related statistics and feedback",
-        "Contributing to cutting-edge wearable robotics research",
-        "Collaborating with interdisciplinary research team"
+        "Selected for the IBM Cloud Networking team",
+        "Will contribute to cloud infrastructure and networking products",
+        "Summer 2026 internship based in Austin, TX"
       ],
-      technologies: ["Python", "C++", "Arduino", "Hardware Design", "AI/ML"],
-      icon: <Code className="w-5 h-5" />
+      technologies: ["IBM Cloud", "Cloud Infrastructure", "Networking"],
+      icon: <Briefcase className="w-5 h-5" />
     },
     {
       id: 2,
+      title: "Software Engineer Intern",
+      company: "National Institute of Standards and Technology",
+      location: "Gaithersburg, MD",
+      period: "May 2025 - Mar 2026",
+      type: "Internship",
+      description: "Engineered AI-driven metrology pipelines for scanning electron microscope (SEM) image processing, advancing precision measurement for semiconductor research.",
+      achievements: [
+        "Built AI-driven metrology pipelines with PyTorch, TensorFlow, and Scikit-Learn to process 1,000+ SEM images",
+        "Reduced scan points by 40% while improving image fidelity by 20%",
+        "Developed and fine-tuned a Denoising Diffusion Probabilistic Model (DDPM) for SEM image enhancement",
+        "Lowered measurement uncertainty by 50%, enhancing semiconductor measurement precision"
+      ],
+      technologies: ["PyTorch", "TensorFlow", "Scikit-Learn", "DDPM", "Computer Vision"],
+      icon: <Microscope className="w-5 h-5" />
+    },
+    {
+      id: 3,
+      title: "Founder & Lead Software Developer",
+      company: "RAGent LLC",
+      location: "Ellicott City, MD",
+      period: "Jan 2025 - Present",
+      type: "Founder",
+      description: "Founded an AI startup building Retrieval-Augmented Generation (RAG) systems for enterprise and education, leading a 20+ person organization.",
+      achievements: [
+        "Founded an AI startup generating $20K+ ARR across a 20+ employee organization",
+        "Architected RAG pipelines with LlamaIndex, FastAPI, OpenAI API, and Weaviate",
+        "Delivered an AI workflow for sustainED (McKinsey-backed) translating/simplifying 7,000+ restricted research documents",
+        "Reduced document review time by 35%, improving accessibility for Southern African education ministries"
+      ],
+      technologies: ["LlamaIndex", "FastAPI", "OpenAI API", "Weaviate", "RAG"],
+      icon: <Rocket className="w-5 h-5" />
+    },
+    {
+      id: 4,
+      title: "Software Research Assistant",
+      company: "University of Maryland Institute for Advanced Computer Studies",
+      location: "College Park, MD",
+      period: "Aug 2024 - Present",
+      type: "Research",
+      description: "Building firmware and interactive systems for Calico, an ACM IMWUT-published miniature wearable robot for on-body interaction, actuation, and sensing.",
+      achievements: [
+        "Engineered C++ and Python firmware for an ESP32-S3 wearable robot with a touchscreen UI",
+        "Integrated an IMU sensor pipeline and WiFi communication stack with anatomical imagery display",
+        "Extended the ACM IMWUT-published Calico platform to support educational programming environments",
+        "Project featured in IEEE Spectrum and The Verge, demonstrated at CHI and UbiComp"
+      ],
+      technologies: ["C++", "Python", "ESP32-S3", "Embedded Systems", "IMU Sensors"],
+      icon: <Code className="w-5 h-5" />
+    },
+    {
+      id: 5,
       title: "Software Engineer Intern",
       company: "Aspire JHU APL",
       location: "Johns Hopkins Applied Physics Laboratory",
@@ -44,7 +94,7 @@ export default function Experience() {
       icon: <Users className="w-5 h-5" />
     },
     {
-      id: 3,
+      id: 6,
       title: "Junior Developer",
       company: "Neuron-G",
       location: "Remote",
@@ -61,7 +111,7 @@ export default function Experience() {
       icon: <Award className="w-5 h-5" />
     },
     {
-      id: 4,
+      id: 7,
       title: "Research and Development Intern",
       company: "BlueWave Semiconductors",
       location: "On-site",
@@ -198,10 +248,10 @@ export default function Experience() {
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
           {[
-            { number: "4+", label: "Years Experience" },
-            { number: "4", label: "Research Projects" },
-            { number: "10+", label: "Technologies" },
-            { number: "3", label: "Leadership Roles" }
+            { number: "6+", label: "Years Experience" },
+            { number: "7", label: "Professional Roles" },
+            { number: "20+", label: "Technologies" },
+            { number: "1", label: "Startup Founded" }
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
