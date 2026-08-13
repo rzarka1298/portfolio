@@ -8,68 +8,113 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  longDescription: string;
+  image: string;
+  category: string;
+  tags: string[];
+  results: string;
+  /** Omitted when the project has no public repo — the Code button is hidden */
+  github?: string;
+  /** Omitted when the project has no live demo — the Demo button is hidden */
+  demo?: string;
+}
+
 export default function Projects() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  
+
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [projectViews, setProjectViews] = useState<Record<string, number>>({});
-  
-  const filters = ['All', 'AI/ML', 'Web Dev', 'Hardware', 'Research'];
-  
-  const projects = [
+
+  const projects: Project[] = [
     {
       id: 1,
-      title: "Agentic RAG for IP",
-      description: "Developing a Retrieval-Augmented Generation (RAG) pipeline leveraging Llama Stack to parse, vectorize, and query patent XML files.",
-      longDescription: "This project provides high-relevance document retrieval and dynamic, context-driven answers by integrating open-source LLM models and a vector database (AWS) to handle large volumes of patent text. The system enables semantically rich searching and automated patent analysis, revolutionizing how intellectual property research is conducted.",
-      image: "/projects/llama.png",
+      title: "HarnessFlow",
+      description: "An open-source framework that lets developers define AI agent pipelines in YAML and compiles them into deterministic, production-reliable workflows.",
+      longDescription: "HarnessFlow solves the problem of unpredictable agent behavior in production systems. YAML workflow definitions compile into Temporal-orchestrated runs executed by a polyglot Go (Connect-Go, sqlc) and Python runtime, with model fallback and approval-gate signals built in. The platform is instrumented with OpenTelemetry GenAI conventions and ships an eval-gated CI pipeline using LLM-as-judge, embedding similarity, and cost/latency scorers — essentially GitHub Actions, Temporal, and Datadog for AI agents.",
+      image: "/projects/project-2.jpg",
       category: "AI/ML",
-      tags: ["Python", "llama-stack", "vLLM", "FAISS", "Inference Models"],
-      github: "https://github.com",
-      demo: "https://demo.com",
-      results: "Automated patent analysis pipeline"
+      tags: ["Go", "Python", "Temporal", "YAML", "OpenTelemetry", "Connect-Go", "sqlc"],
+      github: "https://github.com/rzarka1298/harnessflow",
+      results: "Open-source agent orchestration platform"
     },
     {
       id: 2,
-      title: "Calico Smartlabs",
-      description: "A fully functional miniature relocatable wearable system with fast and precise locomotion for on-body interaction, actuation, and sensing.",
-      longDescription: "This cutting-edge research project involves creating a miniature robot that can move around on the human body while providing interactive touchscreen capabilities. The system uses advanced sensors and AI to understand user actions and provide real-time feedback, representing a breakthrough in wearable robotics technology.",
-      image: "/projects/calico.png",
-      category: "Hardware",
-      tags: ["Python", "C++", "Arduino", "Hardware Design", "UI Development"],
-      github: "https://github.com",
-      demo: "https://demo.com",
-      results: "Breakthrough in wearable robotics"
+      title: "Lane-Optimize",
+      description: "Reinforcement learning for real-time highway lane optimization in SUMO, with a live FastAPI/React dashboard.",
+      longDescription: "Lane-Optimize applies reinforcement learning to real-time highway lane assignment inside the SUMO traffic simulator. It implements a from-scratch PyTorch DQN alongside Stable-Baselines3 PPO and a multi-agent shared-policy PPO, benchmarked against rule-based baselines to quantify how much RL actually buys over conventional traffic heuristics. A live FastAPI backend and React dashboard visualize policy behavior and throughput as episodes run.",
+      image: "/projects/project-3.jpg",
+      category: "AI/ML",
+      tags: ["PyTorch", "Stable-Baselines3", "SUMO", "FastAPI", "React", "Multi-Agent RL"],
+      github: "https://github.com/rzarka1298/Lane-Optimize",
+      results: "RL vs. rule-based traffic benchmarks"
     },
     {
       id: 3,
-      title: "Neuromaker International Bioengineering Competition",
-      description: "Built a prosthetic hand to convert speech to American Sign Language using Google APIs, Python, and RaspberryOS.",
-      longDescription: "This innovative project created a prosthetic hand capable of translating spoken language into American Sign Language gestures in real-time. Using Google's speech recognition APIs and custom hardware control, the system provides accessibility solutions for the deaf and hard-of-hearing community. The project demonstrates the intersection of AI, hardware engineering, and social impact.",
-      image: "/projects/neuromakerHand.jpeg",
+      title: "Calico Smartlabs",
+      description: "A fully functional miniature relocatable wearable system with fast and precise locomotion for on-body interaction, actuation, and sensing.",
+      longDescription: "Calico is a miniature robot that relocates across the human body while providing interactive touchscreen capabilities. Built on an ESP32-S3 with C++ and Python firmware, it integrates an IMU sensor pipeline and WiFi communication stack, displaying anatomical imagery on its touchscreen UI. Published at ACM IMWUT, featured in IEEE Spectrum and The Verge, and demonstrated at CHI and UbiComp.",
+      image: "/projects/calico.png",
       category: "Hardware",
-      tags: ["Google API", "Python", "RaspberryOS", "Hardware Control"],
-      github: "https://github.com",
-      demo: "https://demo.com",
-      results: "International competition recognition"
+      tags: ["C++", "Python", "ESP32-S3", "IMU Sensors", "Embedded Systems"],
+      github: "https://github.com/jsli96/onBodyRobot",
+      demo: "https://smartlab.cs.umd.edu",
+      results: "ACM IMWUT published, featured in IEEE Spectrum"
     },
     {
       id: 4,
+      title: "BiasGPT",
+      description: "A DistilBERT bias classifier paired with counterfactual demographic swapping to measure how text sentiment shifts when identity changes.",
+      longDescription: "BiasGPT fine-tunes a DistilBERT sequence classifier to score text for demographic bias, then probes it with counterfactuals: a spaCy-driven swap engine rewrites names, pronouns, and surnames to generate matched pairs, exposing how much a model's judgment depends on identity rather than content. The system is served through a FastAPI backend with a React frontend, backed by an automated nightly pipeline that regenerates data, retrains, and redeploys the classifier.",
+      image: "/projects/project-4.jpg",
+      category: "AI/ML",
+      tags: ["PyTorch", "DistilBERT", "HuggingFace", "spaCy", "FastAPI", "React"],
+      github: "https://github.com/rzarka1298/BiasGPT",
+      results: "Automated nightly retrain and deploy"
+    },
+    {
+      id: 5,
+      title: "Agentic RAG for IP",
+      description: "A Retrieval-Augmented Generation pipeline leveraging Llama Stack to parse, vectorize, and query patent XML files.",
+      longDescription: "This project provides high-relevance document retrieval and dynamic, context-driven answers by integrating open-source LLM models and a vector database (AWS) to handle large volumes of patent text. The system enables semantically rich searching and automated patent analysis, changing how intellectual property research is conducted.",
+      image: "/projects/llama.png",
+      category: "AI/ML",
+      tags: ["Python", "llama-stack", "vLLM", "FAISS", "Inference Models"],
+      results: "Automated patent analysis pipeline"
+    },
+    {
+      id: 6,
+      title: "Neuromaker International Bioengineering Competition",
+      description: "Built a prosthetic hand to convert speech to American Sign Language using Google APIs, Python, and RaspberryOS.",
+      longDescription: "This project created a prosthetic hand capable of translating spoken language into American Sign Language gestures in real time. Using Google's speech recognition APIs and custom hardware control, the system provides accessibility solutions for the deaf and hard-of-hearing community, demonstrating the intersection of AI, hardware engineering, and social impact.",
+      image: "/projects/neuromakerHand.jpeg",
+      category: "Hardware",
+      tags: ["Google API", "Python", "RaspberryOS", "Hardware Control"],
+      results: "International competition recognition"
+    },
+    {
+      id: 7,
       title: "Portfolio Website",
-      description: "A personal portfolio website showcasing projects, skills, and contact information with modern web technologies.",
-      longDescription: "This responsive portfolio website showcases professional work and technical skills through a modern, clean design. Built with React and Tailwind CSS, it features smooth animations, dark mode support, and optimized performance. The site serves as both a portfolio piece and a demonstration of front-end development capabilities.",
+      description: "This site — a personal portfolio built with React, Tailwind, and Framer Motion, with dark mode and a Supabase-backed contact form.",
+      longDescription: "This responsive portfolio showcases professional work and technical skills through a modern, clean design. Built with React, TypeScript, and Tailwind CSS, it features smooth Framer Motion animations, class-based dark mode, and a Supabase Edge Function backing the contact form and visitor analytics. Deployed on AWS Amplify.",
       image: "/projects/project-1.jpg",
       category: "Web Dev",
-      tags: ["HTML", "CSS", "React", "Tailwind"],
-      github: "https://github.com",
-      demo: "https://demo.com",
-      results: "Professional online presence"
+      tags: ["React", "TypeScript", "Tailwind", "Framer Motion", "Supabase", "AWS Amplify"],
+      github: "https://github.com/rzarka1298/portfolio",
+      demo: "https://main.dv1zd1ccteche.amplifyapp.com/",
+      results: "Live on AWS Amplify"
     }
   ];
 
-  const filteredProjects = selectedFilter === 'All' 
-    ? projects 
+  // Derive filters from the projects themselves so no filter can render an empty grid
+  const filters = ['All', ...Array.from(new Set(projects.map(project => project.category)))];
+
+  const filteredProjects = selectedFilter === 'All'
+    ? projects
     : projects.filter(project => project.category === selectedFilter);
 
   // Load project view counts on component mount
@@ -103,7 +148,7 @@ export default function Projects() {
     */
   }, []);
 
-  const trackProjectView = async (project: typeof projects[0]) => {
+  const trackProjectView = async (project: Project) => {
     // For now, just log project views since we don't have the project-view endpoint
     console.log('📊 Project viewed:', project.title);
     
@@ -136,7 +181,7 @@ export default function Projects() {
         >
           <h2 className="text-4xl md:text-5xl mb-4">Featured Projects</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A showcase of my recent work spanning web development, AI/ML, and user experience design
+            A showcase of my recent work spanning AI infrastructure, machine learning, and wearable robotics
           </p>
         </motion.div>
       </div>
@@ -183,20 +228,26 @@ export default function Projects() {
                   alt={project.title}
                   className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-4">
-                  <Button size="sm" variant="secondary" asChild>
-                    <a href={project.github} target="_blank" rel="noopener noreferrer">
-                      <Github className="w-4 h-4 mr-2" />
-                      Code
-                    </a>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Demo
-                    </a>
-                  </Button>
-                </div>
+                {(project.github || project.demo) && (
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-4">
+                    {project.github && (
+                      <Button size="sm" variant="secondary" asChild>
+                        <a href={project.github} target="_blank" rel="noopener noreferrer">
+                          <Github className="w-4 h-4 mr-2" />
+                          Code
+                        </a>
+                      </Button>
+                    )}
+                    {project.demo && (
+                      <Button size="sm" asChild>
+                        <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Demo
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )}
                 
                 {/* View count */}
                 {projectViews[project.id] && (
@@ -272,20 +323,26 @@ export default function Projects() {
                             {projectViews[project.id]} views
                           </div>
                         )}
-                        <div className="flex space-x-4 pt-4">
-                          <Button asChild>
-                            <a href={project.github} target="_blank" rel="noopener noreferrer">
-                              <Github className="w-4 h-4 mr-2" />
-                              View Code
-                            </a>
-                          </Button>
-                          <Button variant="outline" asChild>
-                            <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              Live Demo
-                            </a>
-                          </Button>
-                        </div>
+                        {(project.github || project.demo) && (
+                          <div className="flex space-x-4 pt-4">
+                            {project.github && (
+                              <Button asChild>
+                                <a href={project.github} target="_blank" rel="noopener noreferrer">
+                                  <Github className="w-4 h-4 mr-2" />
+                                  View Code
+                                </a>
+                              </Button>
+                            )}
+                            {project.demo && (
+                              <Button variant="outline" asChild>
+                                <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  Live Demo
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>

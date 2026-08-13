@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Calendar, MapPin, Award, TrendingUp, Users, Code, Briefcase, Microscope, Rocket } from 'lucide-react';
+import { Calendar, MapPin, Award, TrendingUp, Users, Code, Cloud, Server, Microscope, Rocket } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 
@@ -11,22 +11,39 @@ export default function Experience() {
   const experiences = [
     {
       id: 1,
-      title: "Incoming Software Engineer Intern",
-      company: "IBM",
-      location: "Austin, TX",
-      period: "May 2026",
-      type: "Incoming",
-      description: "Joining the IBM Cloud Networking team to work on cloud infrastructure and networking products.",
+      title: "Software Engineer Intern",
+      company: "Amazon Web Services",
+      location: "Arlington, VA",
+      period: "Aug 2026 - Present",
+      type: "Current",
+      description: "Building on the Domain Name Services team, working on the DNS infrastructure that resolves traffic across AWS at global scale.",
       achievements: [
-        "Selected for the IBM Cloud Networking team",
-        "Will contribute to cloud infrastructure and networking products",
-        "Summer 2026 internship based in Austin, TX"
+        "Joined the Domain Name Services team in Arlington, VA",
+        "Working on DNS infrastructure operating at global scale",
+        "Extending the authoritative and recursive DNS experience built at IBM"
       ],
-      technologies: ["IBM Cloud", "Cloud Infrastructure", "Networking"],
-      icon: <Briefcase className="w-5 h-5" />
+      technologies: ["AWS", "DNS", "Distributed Systems", "Cloud Infrastructure"],
+      icon: <Cloud className="w-5 h-5" />
     },
     {
       id: 2,
+      title: "Software Engineer Intern",
+      company: "IBM",
+      location: "Austin, TX",
+      period: "May 2026 - Aug 2026",
+      type: "Internship",
+      description: "Architected and optimized a recursive DNS platform serving 30 clients, then automated the provisioning pipeline behind IBM's Classic-to-VPC migration.",
+      achievements: [
+        "Architected a recursive DNS platform on DNSDist, Unbound, and SDNLB, scaling throughput 10× from 100K to 1M+ QPS with sub-1% loss across 30 clients, 2 DNSDist nodes, and 3 Unbound nodes",
+        "Increased DNSDist throughput 19% through multi-instance CPU pinning and end-to-end DNSDist, Unbound, Linux kernel, systemd, and network tuning",
+        "Built Python metrics exporters and customized Grafana/Osprey dashboards for platform observability",
+        "Developed Ansible automation that cut node provisioning from days to under 3 minutes for IBM's Classic-to-VPC migration"
+      ],
+      technologies: ["DNSDist", "Unbound", "SDNLB", "Ansible", "Python", "Grafana", "Linux"],
+      icon: <Server className="w-5 h-5" />
+    },
+    {
+      id: 3,
       title: "Software Engineer Intern",
       company: "National Institute of Standards and Technology",
       location: "Gaithersburg, MD",
@@ -43,24 +60,24 @@ export default function Experience() {
       icon: <Microscope className="w-5 h-5" />
     },
     {
-      id: 3,
+      id: 4,
       title: "Founder & Lead Software Developer",
       company: "RAGent LLC",
       location: "Ellicott City, MD",
-      period: "Jan 2025 - Present",
+      period: "Jan 2025 - Apr 2026",
       type: "Founder",
       description: "Founded an AI startup building Retrieval-Augmented Generation (RAG) systems for enterprise and education, leading a 20+ person organization.",
       achievements: [
         "Founded an AI startup generating $20K+ ARR across a 20+ employee organization",
-        "Architected RAG pipelines with LlamaIndex, FastAPI, OpenAI API, and Weaviate",
-        "Delivered an AI workflow for sustainED (McKinsey-backed) translating/simplifying 7,000+ restricted research documents",
-        "Reduced document review time by 35%, improving accessibility for Southern African education ministries"
+        "Architected RAG pipelines with llama-index, FastAPI, OpenAI API, and Weaviate for hybrid vector + keyword search and parallel document retrieval",
+        "Delivered an AI workflow for sustainED (McKinsey-backed) on AWS-native infrastructure — Terraform IaC, Aurora Serverless v2, and Bedrock Titan + Claude 3.5 Haiku",
+        "Translated and simplified 7,000+ restricted research documents, cutting review time 35% and improving accessibility for Southern African education ministries"
       ],
-      technologies: ["LlamaIndex", "FastAPI", "OpenAI API", "Weaviate", "RAG"],
+      technologies: ["llama-index", "FastAPI", "Weaviate", "Terraform", "AWS Bedrock", "Aurora Serverless"],
       icon: <Rocket className="w-5 h-5" />
     },
     {
-      id: 4,
+      id: 5,
       title: "Software Research Assistant",
       company: "University of Maryland Institute for Advanced Computer Studies",
       location: "College Park, MD",
@@ -77,7 +94,7 @@ export default function Experience() {
       icon: <Code className="w-5 h-5" />
     },
     {
-      id: 5,
+      id: 6,
       title: "Software Engineer Intern",
       company: "Aspire JHU APL",
       location: "Johns Hopkins Applied Physics Laboratory",
@@ -94,7 +111,7 @@ export default function Experience() {
       icon: <Users className="w-5 h-5" />
     },
     {
-      id: 6,
+      id: 7,
       title: "Junior Developer",
       company: "Neuron-G",
       location: "Remote",
@@ -111,7 +128,7 @@ export default function Experience() {
       icon: <Award className="w-5 h-5" />
     },
     {
-      id: 7,
+      id: 8,
       title: "Research and Development Intern",
       company: "BlueWave Semiconductors",
       location: "On-site",
@@ -249,8 +266,8 @@ export default function Experience() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
           {[
             { number: "6+", label: "Years Experience" },
-            { number: "7", label: "Professional Roles" },
-            { number: "20+", label: "Technologies" },
+            { number: "8", label: "Professional Roles" },
+            { number: "30+", label: "Technologies" },
             { number: "1", label: "Startup Founded" }
           ].map((stat, index) => (
             <motion.div

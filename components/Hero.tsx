@@ -60,7 +60,7 @@ export default function Hero() {
             className="mb-6"
           >
             <span className="text-primary bg-primary/10 px-4 py-2 rounded-full">
-              👋 Hello, I'm a Software Engineering Student
+              👋 Software Engineer @ AWS · CS @ Maryland
             </span>
           </motion.div>
 
@@ -81,32 +81,32 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed"
           >
-            I am a skilled full-stack developer with expertise in building
+            I build systems that hold up in production — from
             <motion.span
               className="text-primary"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 1 }}
             >
-              {" "}AI-driven applications
+              {" "}DNS infrastructure at 1M+ QPS
             </motion.span>
-            ,
+            , to
             <motion.span
               className="text-primary"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 1.2 }}
             >
-              {" "}wearable robotics
+              {" "}AI agent orchestration
             </motion.span>
-            , and
+            , to
             <motion.span
               className="text-primary"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 1.4 }}
             >
-              {" "}scalable solutions
+              {" "}wearable robotics
             </motion.span>
           </motion.div>
 
@@ -168,7 +168,7 @@ export default function Hero() {
             </motion.a>
             
             <motion.a
-              href="https://www.linkedin.com/in/rugved-zarkar-96878b2a4"
+              href="https://www.linkedin.com/in/rugved-zarkar"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1 }}

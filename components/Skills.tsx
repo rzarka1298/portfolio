@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Code2, Database, Brain, Wrench, BookOpen, Settings } from 'lucide-react';
+import { Code2, Globe, Brain, Cloud, Award, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 
@@ -10,91 +10,105 @@ export default function Skills() {
 
   const skillCategories = [
     {
-      name: "Programming Languages",
+      name: "Languages",
       icon: <Code2 className="w-6 h-6" />,
       color: "from-blue-500 to-cyan-500",
       skills: [
         { name: "Python" },
         { name: "Java" },
-        { name: "JavaScript" },
         { name: "TypeScript" },
+        { name: "JavaScript" },
+        { name: "Go" },
+        { name: "SQL" },
+        { name: "C" },
         { name: "C++" },
+        { name: "MATLAB" },
         { name: "HTML/CSS" }
       ]
     },
     {
-      name: "Web Development",
-      icon: <Database className="w-6 h-6" />,
-      color: "from-green-500 to-emerald-500",
-      skills: [
-        { name: "React" },
-        { name: "Node.js" },
-        { name: "Next.js" },
-        { name: "Tailwind CSS" },
-        { name: "MongoDB" },
-        { name: "PostgreSQL" }
-      ]
-    },
-    {
-      name: "AI/ML & Data Science",
+      name: "AI & Machine Learning",
       icon: <Brain className="w-6 h-6" />,
       color: "from-teal-500 to-green-500",
       skills: [
-        { name: "llama-stack" },
-        { name: "vLLM" },
+        { name: "PyTorch" },
+        { name: "TensorFlow" },
+        { name: "Scikit-Learn" },
+        { name: "HuggingFace" },
+        { name: "LangChain" },
+        { name: "llama-index" },
+        { name: "Weaviate" },
         { name: "FAISS" },
-        { name: "SKLearn" },
-        { name: "Random Forest" },
-        { name: "Data Analysis" }
+        { name: "Diffusion Models" }
       ]
     },
     {
-      name: "Hardware & Robotics",
-      icon: <Wrench className="w-6 h-6" />,
-      color: "from-orange-500 to-red-500",
-      skills: [
-        { name: "Arduino" },
-        { name: "RaspberryOS" },
-        { name: "Hardware Design" },
-        { name: "PLC Programming" },
-        { name: "Ladder Logic" },
-        { name: "CVD Systems" }
-      ]
-    },
-    {
-      name: "Development Tools",
-      icon: <Settings className="w-6 h-6" />,
+      name: "Cloud & Infrastructure",
+      icon: <Cloud className="w-6 h-6" />,
       color: "from-purple-500 to-pink-500",
       skills: [
-        { name: "Git/GitHub" },
-        { name: "MATLAB" },
         { name: "AWS" },
-        { name: "Google APIs" },
         { name: "Docker" },
-        { name: "Linux" }
+        { name: "Linux" },
+        { name: "Terraform" },
+        { name: "Ansible" },
+        { name: "Temporal" },
+        { name: "DNSDist" },
+        { name: "Unbound" },
+        { name: "Grafana" }
       ]
     },
     {
-      name: "Research & Analytics",
-      icon: <BookOpen className="w-6 h-6" />,
+      name: "Web & Frameworks",
+      icon: <Globe className="w-6 h-6" />,
+      color: "from-green-500 to-emerald-500",
+      skills: [
+        { name: "React.js" },
+        { name: "Node.js" },
+        { name: "FastAPI" },
+        { name: "Tailwind CSS" },
+        { name: "REST APIs" },
+        { name: "MySQL" },
+        { name: "Supabase" }
+      ]
+    },
+    {
+      name: "Developer Tools",
+      icon: <Settings className="w-6 h-6" />,
+      color: "from-orange-500 to-red-500",
+      skills: [
+        { name: "Git" },
+        { name: "GitHub" },
+        { name: "Bash" },
+        { name: "OpenTelemetry" },
+        { name: "Vite" },
+        { name: "systemd" }
+      ]
+    },
+    {
+      name: "Certifications",
+      icon: <Award className="w-6 h-6" />,
       color: "from-indigo-500 to-blue-500",
       skills: [
-        { name: "Patent Analysis" },
-        { name: "Statistical Analysis" },
-        { name: "Research Methods" },
-        { name: "Technical Writing" },
-        { name: "Data Visualization" }
+        { name: "AWS Certified Cloud Practitioner" },
+        { name: "AWS Solutions Architect" },
+        { name: "Autodesk Fusion Certified" }
       ]
     }
   ];
 
-  const allSkills = skillCategories.flatMap(category => 
-    category.skills.map(skill => ({
-      ...skill,
-      category: category.name,
-      color: category.color
-    }))
-  );
+  // Take a few from each category so the stack cloud stays representative rather than
+  // showing only whichever categories happen to be listed first. Certifications are
+  // excluded — their names are too long to read well as pills.
+  const featuredSkills = skillCategories
+    .filter(category => category.name !== 'Certifications')
+    .flatMap(category =>
+      category.skills.slice(0, 4).map(skill => ({
+        ...skill,
+        category: category.name,
+        color: category.color
+      }))
+    );
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,7 +176,7 @@ export default function Skills() {
       >
         <h3 className="text-2xl mb-8">Technology Stack</h3>
         <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
-          {allSkills.slice(0, 20).map((skill, index) => (
+          {featuredSkills.map((skill, index) => (
             <motion.div
               key={skill.name}
               initial={{ opacity: 0, scale: 0 }}

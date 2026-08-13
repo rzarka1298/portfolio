@@ -93,7 +93,8 @@ export default function Contact() {
     
     // Download resume
     const link = document.createElement('a');
-    link.href = './assets/Zarkar_Rugved_Resume.pdf';
+    // Must be served from public/ — Vite does not serve the sibling assets/ directory
+    link.href = '/Zarkar_Rugved_Resume.pdf';
     link.download = 'Rugved_Zarkar_Resume.pdf';
     link.click();
     
@@ -131,7 +132,7 @@ export default function Contact() {
     {
       name: "LinkedIn",
       icon: <Linkedin className="w-6 h-6" />,
-      href: "https://www.linkedin.com/in/rugved-zarkar-96878b2a4",
+      href: "https://www.linkedin.com/in/rugved-zarkar",
       color: "hover:text-blue-600"
     },
     {

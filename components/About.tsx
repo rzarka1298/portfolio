@@ -2,8 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { Coffee, Code2, Palette, Zap } from 'lucide-react';
+import { Coffee, Code2, Palette, Zap, GraduationCap } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import PortfolioViews from './PortfolioViews';
 
@@ -14,31 +15,48 @@ export default function About() {
   const highlights = [
     {
       icon: <Code2 className="w-6 h-6" />,
-      title: "Full-Stack Developer",
-      description: "Skilled in Python, Java, JavaScript, TypeScript, React"
+      title: "Infrastructure Engineer",
+      description: "Scaling DNS and cloud platforms to 1M+ QPS at AWS and IBM"
     },
     {
       icon: <Palette className="w-6 h-6" />,
       title: "AI/ML Engineer",
-      description: "Building AI-driven applications and data-intensive systems"
+      description: "Building RAG systems, diffusion models, and agent orchestration"
     },
     {
       icon: <Zap className="w-6 h-6" />,
       title: "Research Assistant",
-      description: "Developing interactive touchscreen systems and robotics"
+      description: "Published wearable robotics work at ACM IMWUT with UMIACS"
     },
     {
       icon: <Coffee className="w-6 h-6" />,
-      title: "Software Engineering Student",
-      description: "Passionate about innovation and problem-solving"
+      title: "Founder",
+      description: "Bootstrapped an AI startup to $20K+ ARR and 20+ people"
     }
   ];
 
+  const education = {
+    school: "University of Maryland, College Park",
+    degree: "Bachelor of Science in Computer Science",
+    graduation: "Expected December 2027",
+    gpa: "3.83 / 4.00",
+    coursework: [
+      "Advanced Data Structures",
+      "Machine Learning",
+      "Compilers",
+      "Computer Vision",
+      "Operating Systems",
+      "Database Systems",
+      "Algorithms",
+      "Object-Oriented Programming"
+    ]
+  };
+
   const stats = [
-    { number: "4+", label: "Research Projects" },
-    { number: "3+", label: "Years Experience" },
-    { number: "10+", label: "Technologies Used" },
-    { number: "100%", label: "Commitment to Innovation" }
+    { number: "6+", label: "Years Experience" },
+    { number: "8", label: "Professional Roles" },
+    { number: "30+", label: "Technologies Used" },
+    { number: "3.83", label: "GPA at UMD" }
   ];
 
   return (
@@ -92,24 +110,58 @@ export default function About() {
         >
           <div className="prose prose-lg max-w-none text-foreground">
             <p className="text-lg leading-relaxed">
-              Hi there! I'm passionate about computer science and its power to drive innovation and solve 
-              complex problems. With experience in software engineering, AI development, and research, 
-              I have worked on projects ranging from building AI-driven chatbots to developing patent 
-              search algorithms and interactive touchscreen systems.
+              Hi there! I'm a Computer Science student at the University of Maryland who works at the
+              seam between infrastructure and AI. At IBM I architected a recursive DNS platform and
+              scaled it 10× to over 1M QPS; I'm now on the Domain Name Services team at AWS, working
+              on DNS at global scale.
             </p>
-            
+
             <p className="text-lg leading-relaxed">
-              My skills in Python, Java, and cloud computing, combined with hands-on experience in 
-              machine learning and robotics, enable me to create impactful, scalable solutions. I 
-              specialize in building scalable, AI-driven applications and data-intensive systems.
+              On the AI side, I've built RAG pipelines serving Southern African education ministries,
+              fine-tuned diffusion models for semiconductor metrology at NIST, and founded RAGent LLC,
+              which I grew to $20K+ ARR and a 20+ person team. I also do wearable robotics research at
+              UMIACS on Calico, published at ACM IMWUT.
             </p>
-            
+
             <p className="text-lg leading-relaxed">
-              When I'm not coding, you'll find me working on research projects, exploring the latest 
-              AI technologies, or contributing to open-source projects. I believe that technology 
-              should enhance human capabilities and solve real-world problems.
+              What ties it together is a bias toward systems that hold up in production — measured,
+              observable, and reliable. That's the idea behind HarnessFlow, my open-source framework
+              for compiling AI agent pipelines into deterministic workflows.
             </p>
           </div>
+
+          {/* Education */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="mb-1">{education.school}</h4>
+                    <p className="text-primary text-sm mb-2">{education.degree}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-4">
+                      <span>{education.graduation}</span>
+                      <span>GPA {education.gpa}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">Relevant coursework</p>
+                    <div className="flex flex-wrap gap-2">
+                      {education.coursework.map((course) => (
+                        <Badge key={course} variant="outline" className="text-xs">
+                          {course}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Fun Fact */}
           <motion.div
