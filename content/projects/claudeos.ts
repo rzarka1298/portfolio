@@ -10,12 +10,12 @@ const claudeos: ProjectPage = {
   title: 'Claude Command Center',
   tagline:
     'ClaudeOS: a local-first command center for Claude Code — an Obsidian plugin backed by a launchd-supervised macOS service over an authenticated Unix socket.',
-  status:
-    'Actively developed. Shipped: authenticated socket transport, Keychain secrets, launchd lifecycle, SQLite store with migrations, managed vault writes, Claude Code session telemetry, the approval inbox, project launchers, canonical tasks and a read-only Codex mirror. The Research, Skills and Knowledge tabs are still placeholders.',
+  status: 'Active development · core shipped',
   summary: [
     'Claude Command Center is a personal command center that runs entirely on one Mac. An Obsidian plugin draws the dashboard. A Node 24 companion service, supervised by launchd, owns the operational SQLite store, the macOS Keychain secret, writes to the managed vault, and a push event stream. The two halves talk over a Unix domain socket that the service creates with 0600 permissions. Nothing listens on a TCP port.',
     'Claude Code sessions show up live, including ones started outside the dashboard. User-level hooks forward a minimized record of each lifecycle event. One pure reducer turns those records into an eight-state Run lifecycle, and the plugin receives the result through an event stream that replays missed events after a reconnect. Consequential actions, such as force-terminating a session, go through an approval inbox: each request is approved once, its content is fingerprinted, and it expires.',
     'The codebase is a 12-package pnpm + Turborepo TypeScript monorepo. Zod schemas in a shared domain package are the single source of truth for every package. It has 28 architecture decision records and roughly 600 test files, and CI gates on import boundaries, Obsidian plugin-policy lint, secret scanning and a personal-data privacy scan.',
+    'Actively developed. Shipped: authenticated socket transport, Keychain secrets, launchd lifecycle, SQLite store with migrations, managed vault writes, Claude Code session telemetry, the approval inbox, project launchers, canonical tasks and a read-only Codex mirror. The Research, Skills and Knowledge tabs are still placeholders.',
   ],
   problem: [
     'Running several Claude Code sessions across projects leaves the state spread over terminal tabs. You can\'t see at a glance which session is waiting on you, which one quietly died, or what an agent wrote into your notes and why.',

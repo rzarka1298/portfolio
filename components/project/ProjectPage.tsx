@@ -156,7 +156,7 @@ export function ProjectPage({ project }: { project: ProjectPageData }) {
         className="pb-6"
       >
         {project.status && (
-          <Badge variant="secondary" className="mb-4">{project.status}</Badge>
+          <Badge variant="secondary" className="mb-4 max-w-full whitespace-normal text-left">{project.status}</Badge>
         )}
         <h1 className="text-4xl md:text-6xl mb-4">{project.title}</h1>
         <p className="text-xl text-muted-foreground max-w-3xl mb-8">{project.tagline}</p>

@@ -38,26 +38,26 @@ export default function Projects() {
     {
       id: 1,
       title: "HarnessFlow",
-      description: "An open-source framework that lets developers define AI agent pipelines in YAML and compiles them into deterministic, production-reliable workflows.",
-      longDescription: "HarnessFlow solves the problem of unpredictable agent behavior in production systems. YAML workflow definitions compile into Temporal-orchestrated runs executed by a polyglot Go (Connect-Go, sqlc) and Python runtime, with model fallback and approval-gate signals built in. The platform is instrumented with OpenTelemetry GenAI conventions and ships an eval-gated CI pipeline using LLM-as-judge, embedding similarity, and cost/latency scorers — essentially GitHub Actions, Temporal, and Datadog for AI agents.",
+      description: "Turns a PRD and a local Git repo into a durable, verified coding run: plan, implement in an isolated worktree, check, and repair within an explicit budget.",
+      longDescription: "HarnessFlow plans a PRD into tasks linked to executable acceptance checks, freezes those checks after an independent review, then drives Codex coding attempts in an isolated Git worktree. A run only completes when every frozen check passes at HEAD and a per-requirement judge agrees; failures and review findings trigger bounded repair attempts, and no-progress loops are stopped. Orchestration is a Temporal workflow advancing one recoverable phase at a time, with Postgres holding run state so runs survive crashes, pauses and restarts. It is built on the author's earlier Go + Python YAML workflow platform, which remains as its foundation.",
       image: "/projects/project-2.jpg",
       category: "AI/ML",
-      tags: ["Go", "Python", "Temporal", "YAML", "OpenTelemetry", "Connect-Go", "sqlc"],
+      tags: ["Go", "Python", "Temporal", "Postgres", "Next.js", "Codex CLI"],
       github: "https://github.com/rzarka1298/harnessflow",
-      results: "Open-source agent orchestration platform",
+      results: "Verified PRD-to-branch coding runs",
       slug: "harnessflow"
     },
     {
       // New id (not renumbered) so existing per-project view analytics keep their keys
       id: 8,
-      title: "ClaudeOS",
-      description: "A command center for running, orchestrating and remembering the work of many Claude agent sessions.",
-      longDescription: "ClaudeOS brings agent sessions, scheduled automations and a managed knowledge vault into one place, so long-running AI-assisted work keeps its context instead of scattering it across terminals and notes. Placeholder copy — see the deep-dive page for the full architecture.",
+      title: "Claude Command Center",
+      description: "A local-first command center for Claude Code: an Obsidian plugin backed by a launchd-supervised macOS service, with live session telemetry and a human approval inbox.",
+      longDescription: "Claude Command Center (repo: ClaudeOS) shows every Claude Code session live, including ones started outside the dashboard, via non-blocking hooks and an event stream that replays missed events after a reconnect. The plugin talks to its companion service over an authenticated Unix domain socket, so no browser can reach it; secrets live only in the macOS Keychain. Consequential actions go through a one-time, payload-hashed approval inbox, and managed knowledge-vault writes are scope-checked and atomic. A 12-package pnpm + Turborepo TypeScript monorepo with Zod-typed domain schemas and boundary-enforcing CI.",
       image: "/projects/project-1.jpg",
       category: "AI/ML",
-      tags: ["TypeScript", "Claude", "Agents", "Automation"],
+      tags: ["TypeScript", "Obsidian", "Node.js", "SQLite", "macOS", "Claude Code"],
       github: "https://github.com/rzarka1298/ClaudeOS",
-      results: "Agent orchestration command center",
+      results: "Local-first agent command center",
       slug: "claudeos"
     },
     {

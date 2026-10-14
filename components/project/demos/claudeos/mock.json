@@ -1,0 +1,191 @@
+{
+  "_note": "SYNTHETIC demo data for an in-browser mock of the Claude Command Center dashboard. Every name, ID, path, prompt and number is invented. Enums and labels mirror the real code (packages/domain/src/run.ts, session.ts, approval-view.ts, note-schema.ts, task-schema.ts, tasks.ts, plugin/src/view/destinations.ts, plugin/src/widgets/registry.ts).",
+  "now": "2026-10-14T15:30:00.000Z",
+  "connection": {
+    "states": ["connecting", "live", "disconnected"],
+    "initial": "live",
+    "labels": { "connecting": "Connecting…", "live": "Live", "disconnected": "Disconnected — service not reachable" },
+    "lastEvent": { "type": "session.upserted", "occurredAt": "2026-10-14T15:29:41.000Z" },
+    "lastEventId": 1287
+  },
+  "destinations": [
+    { "id": "overview", "label": "Overview", "description": "The command-center summary.", "implemented": true },
+    { "id": "projects", "label": "Projects", "description": "Registered project shortcuts and their git status.", "implemented": true },
+    { "id": "research", "label": "Research", "description": "Cited reports and the knowledge lifecycle. Filled in a later phase.", "implemented": false },
+    { "id": "tasks", "label": "Tasks", "description": "Canonical tasks in your vault: filters, details and editing.", "implemented": true },
+    { "id": "agent-runs", "label": "Agent runs", "description": "Concurrent Claude sessions, automation runs and approval requests.", "implemented": true, "badge": "pendingApprovals" },
+    { "id": "skills", "label": "Skills", "description": "Reusable, user-invocable capabilities. Filled in a later phase.", "implemented": false },
+    { "id": "knowledge", "label": "Knowledge", "description": "The managed vault's raw, wiki, and output lifecycle. Filled in a later phase.", "implemented": false, "demoNote": "Not built in the real plugin yet; the mock may show a read-only vault browser over the synthetic notes below, clearly labelled as a preview." },
+    { "id": "settings", "label": "Settings", "description": "Plugin configuration and diagnostics.", "implemented": true }
+  ],
+  "runStateDisplay": {
+    "queued": { "label": "Queued", "glyph": "◦", "group": "active" },
+    "starting": { "label": "Starting", "glyph": "▹", "group": "active" },
+    "running": { "label": "Running", "glyph": "▸", "group": "active" },
+    "waiting-for-approval": { "label": "Waiting for approval", "glyph": "◆", "group": "active" },
+    "stale": { "label": "Unknown — ended without reporting", "glyph": "?", "group": "active" },
+    "completed": { "label": "Completed", "glyph": "✓", "group": "ended" },
+    "failed": { "label": "Failed", "glyph": "✕", "group": "ended" },
+    "cancelled": { "label": "Cancelled", "glyph": "⊘", "group": "ended" }
+  },
+  "widgets": [
+    { "id": "service-health", "title": "Service health", "placement": "rail", "state": "ready", "freshness": "live", "data": { "status": "Connected", "uptime": "3 h 12 m", "lastEvent": "session.upserted · 19 s ago" } },
+    { "id": "today", "title": "Today", "placement": "rail", "state": "permission-required", "sourceLabel": "Google Calendar and Gmail", "body": "Google Calendar and Gmail isn't connected", "action": "Connect" },
+    { "id": "quick-actions", "title": "Quick actions", "placement": "rail", "state": "ready", "data": { "actions": [
+      { "label": "Open project switcher", "effect": "switcher-opened" },
+      { "label": "New task", "effect": "navigate:tasks" },
+      { "label": "Raise a test approval", "effect": "proposal:diagnostic.test" },
+      { "label": "Connect GitHub", "effect": "unavailable" }
+    ] } },
+    { "id": "active-sessions", "title": "Active Claude sessions", "placement": "canvas", "variant": "hero", "state": "ready", "freshness": "live", "sourceLabel": "Claude Code hooks", "derived": "value = running + waiting-for-approval; caption = '{waiting} waiting for approval · {stale} unknown'; meter = waiting / value" },
+    { "id": "project-shortcuts", "title": "Project shortcuts", "placement": "canvas", "state": "ready", "freshness": "live", "sourceLabel": "Registered projects" },
+    { "id": "claude-usage", "title": "Claude usage", "placement": "canvas", "state": "ready", "freshness": "cached", "partial": false, "data": {
+      "planCapacity": { "label": "5-hour window", "usedPercent": 42, "resetsAt": "2026-10-14T18:00:00.000Z" },
+      "weekly": { "usedPercent": 31 },
+      "tokensToday": 1842300,
+      "estimatedCostUsd": 6.4,
+      "halfHourly": [12, 30, 44, 8, 0, 0, 22, 61, 75, 40, 18, 52]
+    } },
+    { "id": "codex", "title": "Codex", "placement": "canvas", "state": "ready", "freshness": "cached", "data": {
+      "weeklyUsedPercent": 57, "reservePercent": 80, "headroomLabel": "23 points of room before the reserve",
+      "sessions": [
+        { "id": "cx-demo-01", "title": "Review: retry backoff in the sync client", "project": "orbit-notes", "updatedAt": "2026-10-14T14:58:00.000Z" },
+        { "id": "cx-demo-02", "title": "Task: add pagination tests", "project": "tidepool-api", "updatedAt": "2026-10-14T12:10:00.000Z" }
+      ]
+    } },
+    { "id": "tech-intel", "title": "Tech intel", "placement": "canvas", "state": "unavailable", "body": "Tech intel unavailable" },
+    { "id": "github-discoveries", "title": "GitHub discoveries", "placement": "canvas", "state": "permission-required", "sourceLabel": "GitHub", "body": "GitHub isn't connected", "action": "Connect" }
+  ],
+  "projects": [
+    { "id": "prj_demo_orbit", "name": "orbit-notes", "pinned": true, "displayPath": "~/code/orbit-notes", "git": { "kind": "repo", "branch": "main", "detached": false, "dirty": true, "commits": [
+      { "sha": "a1b2c3d", "subject": "Handle empty sync batches", "at": "2026-10-14T13:02:00.000Z" },
+      { "sha": "9f8e7d6", "subject": "Add offline banner", "at": "2026-10-13T21:40:00.000Z" }
+    ], "remote": { "label": "github.com/example/orbit-notes" } }, "observedAt": "2026-10-14T15:28:00.000Z", "workspaceId": "ws01demoorbitaaaaaaaaaaaa" },
+    { "id": "prj_demo_tidepool", "name": "tidepool-api", "pinned": true, "displayPath": "~/code/tidepool-api", "git": { "kind": "repo", "branch": "feat/pagination", "detached": false, "dirty": false, "commits": [
+      { "sha": "4c5d6e7", "subject": "Cursor-based pagination for /items", "at": "2026-10-14T11:15:00.000Z" }
+    ], "remote": { "label": "github.com/example/tidepool-api" } }, "observedAt": "2026-10-14T15:27:30.000Z", "workspaceId": "ws01demotidepoolaaaaaaaaa" },
+    { "id": "prj_demo_lantern", "name": "lantern-cli", "pinned": false, "displayPath": "~/code/lantern-cli", "git": { "kind": "repo", "branch": null, "detached": true, "dirty": false, "commits": [], "remote": null }, "observedAt": "2026-10-14T15:20:00.000Z" },
+    { "id": "prj_demo_sketch", "name": "sketchbook", "pinned": false, "displayPath": "~/scratch/sketchbook", "git": { "kind": "not-a-repo" }, "observedAt": "2026-10-14T15:20:00.000Z" },
+    { "id": "prj_demo_vendor", "name": "vendored-tool", "pinned": false, "displayPath": "~/code/vendored-tool", "git": { "kind": "skipped", "reason": "local-config-commands" }, "observedAt": "2026-10-14T15:20:00.000Z" }
+  ],
+  "gitStateLabels": {
+    "repo": "On {branch}", "not-a-repo": "Not a git repository", "git-unavailable": "Git unavailable",
+    "skipped": "Not read: this repository's local config would run commands", "folder-access-denied": "Folder access denied",
+    "folder-missing": "Folder missing", "pending": "Reading git status…"
+  },
+  "launchActions": [
+    { "action": "antigravity", "label": "Antigravity" },
+    { "action": "claude-code", "label": "Claude Code" },
+    { "action": "pair", "label": "Claude + Codex" },
+    { "action": "finder", "label": "Finder" },
+    { "action": "github", "label": "GitHub" }
+  ],
+  "sessions": [
+    { "runId": "run_demo_0001", "claudeSessionId": "cs-demo-7a1", "name": "Refactor sync queue", "state": "running", "activity": "working", "project": "orbit-notes", "model": "claude-opus", "effort": "high", "launchSource": "dashboard", "startedAt": "2026-10-14T14:41:00.000Z", "lastActivityAt": "2026-10-14T15:29:41.000Z", "endedAt": null, "subagents": 2 },
+    { "runId": "run_demo_0002", "claudeSessionId": "cs-demo-7b2", "name": "Pagination edge cases", "state": "waiting-for-approval", "activity": null, "project": "tidepool-api", "model": "claude-sonnet", "effort": null, "launchSource": "terminal", "startedAt": "2026-10-14T15:02:00.000Z", "lastActivityAt": "2026-10-14T15:24:10.000Z", "endedAt": null, "subagents": 0, "note": "Claude is asking permission in its own terminal; this is NOT an inbox Proposal." },
+    { "runId": "run_demo_0003", "claudeSessionId": "cs-demo-7c3", "name": "Write release notes", "state": "running", "activity": "idle", "project": "lantern-cli", "model": "claude-sonnet", "effort": "medium", "launchSource": "terminal", "startedAt": "2026-10-14T13:55:00.000Z", "lastActivityAt": "2026-10-14T15:11:00.000Z", "endedAt": null, "subagents": 0 },
+    { "runId": "run_demo_0004", "claudeSessionId": "cs-demo-7d4", "name": "Investigate flaky test", "state": "stale", "activity": null, "project": "orbit-notes", "model": null, "effort": null, "launchSource": null, "startedAt": "2026-10-14T10:05:00.000Z", "lastActivityAt": "2026-10-14T10:48:00.000Z", "endedAt": null, "subagents": 0, "durationText": "At least 43 m" },
+    { "runId": "run_demo_0005", "claudeSessionId": "cs-demo-7e5", "name": "Starting…", "state": "starting", "activity": null, "project": "tidepool-api", "model": null, "effort": null, "launchSource": "dashboard", "startedAt": "2026-10-14T15:29:55.000Z", "lastActivityAt": null, "endedAt": null, "subagents": 0 },
+    { "runId": "run_demo_0006", "claudeSessionId": "cs-demo-7f6", "name": "Docs typo sweep", "state": "completed", "activity": null, "project": "orbit-notes", "model": "claude-haiku", "effort": null, "launchSource": "dashboard", "startedAt": "2026-10-14T09:00:00.000Z", "lastActivityAt": "2026-10-14T09:22:00.000Z", "endedAt": "2026-10-14T09:22:30.000Z", "subagents": 0 },
+    { "runId": "run_demo_0007", "claudeSessionId": "cs-demo-7g7", "name": "Migrate config loader", "state": "failed", "activity": null, "project": "lantern-cli", "model": "claude-sonnet", "effort": null, "launchSource": "terminal", "startedAt": "2026-10-13T18:10:00.000Z", "lastActivityAt": "2026-10-13T18:31:00.000Z", "endedAt": "2026-10-13T18:31:05.000Z", "subagents": 0 },
+    { "runId": "run_demo_0008", "claudeSessionId": "cs-demo-7h8", "name": "Untitled session", "state": "running", "activity": "working", "project": null, "model": "claude-sonnet", "effort": null, "launchSource": "external", "startedAt": "2026-10-14T15:15:00.000Z", "lastActivityAt": "2026-10-14T15:29:00.000Z", "endedAt": null, "subagents": 0, "group": "unclassified" }
+  ],
+  "approvalStateDisplay": {
+    "pending": { "label": "Needs your decision", "glyph": "□", "filter": "pending" },
+    "approved": { "label": "Approved", "glyph": "▣", "filter": "decided" },
+    "executing": { "label": "Carrying out", "glyph": "↻", "filter": "decided" },
+    "executed": { "label": "Carried out", "glyph": "✓", "filter": "decided" },
+    "failed": { "label": "Failed", "glyph": "✕", "filter": "decided" },
+    "unknown": { "label": "Outcome unknown", "glyph": "⁇", "filter": "decided" },
+    "denied": { "label": "Denied", "glyph": "⊘", "filter": "decided" },
+    "withdrawn": { "label": "Withdrawn", "glyph": "⊟", "filter": "decided" },
+    "lapsed": { "label": "Lapsed", "glyph": "⊞", "filter": "decided" },
+    "expired": { "label": "Expired — denied automatically", "glyph": "⊡", "filter": "expired" }
+  },
+  "approvalFilters": ["pending", "decided", "expired"],
+  "approvals": [
+    {
+      "proposalId": "prop_demo_0001", "operation": "session.force-terminate", "state": "pending",
+      "title": "Force-terminate session \"Investigate flaky test\"",
+      "requester": { "kind": "dashboard", "label": "" }, "project": "orbit-notes", "runId": "run_demo_0004",
+      "requestedAt": "2026-10-14T15:21:00.000Z", "expiresAt": "2026-10-14T15:36:00.000Z",
+      "fingerprint": "sha256:5f1c…e09a",
+      "blocks": {
+        "happen": "End the Claude Code process for this session.",
+        "target": "Session run_demo_0004 (process 40112)",
+        "change": { "before": "Unknown — ended without reporting", "after": "Cancelled" },
+        "reason": "Session stopped reporting 40 minutes ago.",
+        "risks": ["Unsaved work in that terminal is lost."]
+      },
+      "effect": "end the Claude Code process for this session", "destructive": true
+    },
+    {
+      "proposalId": "prop_demo_0002", "operation": "diagnostic.test", "state": "pending",
+      "title": "Test approval (does nothing)",
+      "requester": { "kind": "dashboard", "label": "" }, "project": null, "runId": null,
+      "requestedAt": "2026-10-14T15:25:00.000Z", "expiresAt": "2026-10-15T15:25:00.000Z",
+      "fingerprint": "sha256:a0b9…77c2",
+      "blocks": { "happen": "Nothing. This request proves the inbox works.", "target": "None", "change": null, "reason": "Raised from Quick actions.", "risks": [] },
+      "effect": "record a test decision", "destructive": false
+    },
+    {
+      "proposalId": "prop_demo_0003", "operation": "session.force-terminate", "state": "executed",
+      "title": "Force-terminate session \"Spike: cache warmup\"",
+      "requester": { "kind": "dashboard", "label": "" }, "project": "tidepool-api", "runId": "run_demo_0099",
+      "requestedAt": "2026-10-13T20:02:00.000Z", "decidedAt": "2026-10-13T20:03:10.000Z", "decidedThrough": "The command center",
+      "fingerprint": "sha256:c3d4…1f0e",
+      "history": [
+        { "at": "2026-10-13T20:02:00.000Z", "event": "Requested" },
+        { "at": "2026-10-13T20:03:10.000Z", "event": "Approved once" },
+        { "at": "2026-10-13T20:03:11.000Z", "event": "Carrying out" },
+        { "at": "2026-10-13T20:03:13.000Z", "event": "Carried out — process ended after SIGTERM" }
+      ]
+    },
+    {
+      "proposalId": "prop_demo_0004", "operation": "diagnostic.test", "state": "expired",
+      "title": "Test approval (does nothing)", "requester": { "kind": "dashboard", "label": "" },
+      "requestedAt": "2026-10-12T09:00:00.000Z", "expiresAt": "2026-10-13T09:00:00.000Z", "fingerprint": "sha256:e5f6…2b3c"
+    }
+  ],
+  "tasks": {
+    "statuses": ["inbox", "proposed", "ready", "in-progress", "blocked", "done", "cancelled"],
+    "priorities": ["urgent", "high", "medium", "low"],
+    "filters": ["all", "today", "upcoming", "overdue", "project", "proposed", "blocked", "completed"],
+    "defaultFilter": "today",
+    "items": [
+      { "id": "t01demoaaaaaaaaaaaaaaaaaa", "title": "Ship offline banner", "status": "in-progress", "priority": "high", "project": "orbit-notes", "due": "2026-10-14", "assignee": "user" },
+      { "id": "t02demoaaaaaaaaaaaaaaaaaa", "title": "Decide pagination cursor format", "status": "blocked", "priority": "medium", "project": "tidepool-api", "due": "2026-10-16", "blockedBy": "Waiting on API review" },
+      { "id": "t03demoaaaaaaaaaaaaaaaaaa", "title": "Rotate demo screenshots", "status": "ready", "priority": "low", "project": "lantern-cli", "due": "2026-10-12" },
+      { "id": "t04demoaaaaaaaaaaaaaaaaaa", "title": "Add a test for empty sync batches", "status": "proposed", "project": "orbit-notes", "assignee": "automation", "proposedBy": "Automation: nightly review" },
+      { "id": "t05demoaaaaaaaaaaaaaaaaaa", "title": "Read the launchd man page", "status": "inbox" },
+      { "id": "t06demoaaaaaaaaaaaaaaaaaa", "title": "Write changelog for 0.4", "status": "done", "project": "lantern-cli", "completedAt": "2026-10-13T17:00:00.000Z" }
+    ]
+  },
+  "vault": {
+    "_note": "Synthetic managed-vault tree. IDs follow the real 25-char [0-9a-z] shape. Stage is frontmatter, not folder-derived.",
+    "stages": ["capture", "raw", "synthesis", "wiki", "deliverable", "output"],
+    "workspaces": [
+      { "id": "ws01demoorbitaaaaaaaaaaaa", "displayName": "Orbit Notes" },
+      { "id": "ws01demotidepoolaaaaaaaaa", "displayName": "Tidepool API" }
+    ],
+    "notes": [
+      { "id": "n01demoaaaaaaaaaaaaaaaaaa", "path": "inbox/idea-keyboard-first-switcher.md", "title": "Idea: keyboard-first project switcher", "scope": "global", "stage": "capture", "aiGenerated": false, "confidence": "unverified", "sources": [], "generatedBy": {}, "created": "2026-10-14T08:10:00.000Z", "updated": "2026-10-14T08:10:00.000Z", "lastReviewed": null },
+      { "id": "n02demoaaaaaaaaaaaaaaaaaa", "path": "global/raw/sqlite-wal-article-snapshot.md", "title": "Snapshot: SQLite WAL mode explainer", "scope": "global", "stage": "raw", "aiGenerated": false, "confidence": "unverified", "sources": ["https://example.org/sqlite-wal"], "generatedBy": {}, "created": "2026-10-10T12:00:00.000Z", "updated": "2026-10-10T12:00:00.000Z", "lastReviewed": null },
+      { "id": "n03demoaaaaaaaaaaaaaaaaaa", "path": "global/wiki/unix-socket-vs-loopback.md", "title": "Unix sockets vs. TCP loopback for local daemons", "scope": "global", "stage": "wiki", "aiGenerated": true, "claimType": "summary", "confidence": "verified", "sources": ["n02demoaaaaaaaaaaaaaaaaaa"], "generatedBy": { "model": "claude-opus", "skill": "research-synthesize", "runId": "run_demo_0042" }, "created": "2026-10-11T09:00:00.000Z", "updated": "2026-10-12T16:30:00.000Z", "lastReviewed": "2026-10-12T16:30:00.000Z" },
+      { "id": "n04demoaaaaaaaaaaaaaaaaaa", "path": "workspaces/ws01demoorbitaaaaaaaaaaaa/raw/sync-bug-repro-log.md", "title": "Sync bug repro log", "scope": "workspace:ws01demoorbitaaaaaaaaaaaa", "stage": "raw", "aiGenerated": false, "confidence": "unverified", "sources": [], "generatedBy": {}, "created": "2026-10-13T10:00:00.000Z", "updated": "2026-10-13T11:20:00.000Z", "lastReviewed": null },
+      { "id": "n05demoaaaaaaaaaaaaaaaaaa", "path": "workspaces/ws01demoorbitaaaaaaaaaaaa/wiki/sync-architecture.md", "title": "Sync architecture", "scope": "workspace:ws01demoorbitaaaaaaaaaaaa", "stage": "synthesis", "aiGenerated": true, "claimType": "inference", "confidence": "inferred", "sources": ["n04demoaaaaaaaaaaaaaaaaaa"], "generatedBy": { "model": "claude-sonnet", "runId": "run_demo_0001" }, "created": "2026-10-14T14:50:00.000Z", "updated": "2026-10-14T15:05:00.000Z", "lastReviewed": null },
+      { "id": "n06demoaaaaaaaaaaaaaaaaaa", "path": "workspaces/ws01demotidepoolaaaaaaaaa/output/pagination-design-brief.md", "title": "Pagination design brief", "scope": "workspace:ws01demotidepoolaaaaaaaaa", "stage": "output", "aiGenerated": true, "claimType": "recommendation", "confidence": "verified", "sources": ["n03demoaaaaaaaaaaaaaaaaaa"], "generatedBy": { "model": "claude-opus", "skill": "write-brief" }, "created": "2026-10-09T15:00:00.000Z", "updated": "2026-10-11T10:00:00.000Z", "lastReviewed": "2026-10-11T10:00:00.000Z" },
+      { "id": "n07demoaaaaaaaaaaaaaaaaaa", "path": "system/prop_demo_0001.md", "title": "Force-terminate a Claude session — Needs your decision", "scope": "global", "stage": "output", "aiGenerated": false, "confidence": "verified", "sources": [], "generatedBy": { "automation": "approval-mirror" }, "created": "2026-10-14T15:21:00.000Z", "updated": "2026-10-14T15:21:00.000Z", "lastReviewed": null, "body": "Status: Needs your decision. Requested by: Dashboard. Expires Oct 14, 3:36 PM. Decide in the command center." }
+    ]
+  },
+  "scripted": {
+    "_note": "Optional timeline the mock can play to feel live. Each item is a synthetic service event on the stream.",
+    "events": [
+      { "atSec": 4, "id": 1288, "type": "session.upserted", "runId": "run_demo_0005", "patch": { "state": "running", "activity": "working", "name": "Add cursor tests", "model": "claude-sonnet" } },
+      { "atSec": 9, "id": 1289, "type": "service.heartbeat" },
+      { "atSec": 14, "id": 1290, "type": "session.upserted", "runId": "run_demo_0003", "patch": { "state": "completed", "endedAt": "+now" } },
+      { "atSec": 20, "id": 1291, "type": "tasks.changed" },
+      { "atSec": 26, "type": "_disconnect", "durationSec": 4, "reconnectMode": "replay", "replayFrom": 1291 }
+    ]
+  }
+}
