@@ -1,4 +1,4 @@
-import type { ComponentType, LazyExoticComponent } from 'react';
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import type { ProjectPage } from '../../../content/projects/types';
 
 /** Props every demo component receives. */
@@ -17,7 +17,10 @@ export type DemoComponent = LazyExoticComponent<ComponentType<DemoProps>>;
  * then set `demoId: 'harnessflow'` on the project's content.
  * A missing or unknown demoId renders nothing.
  */
-export const demoRegistry: Record<string, DemoComponent> = {};
+export const demoRegistry: Record<string, DemoComponent> = {
+  'harnessflow-run': lazy(() => import('./harnessflow/HarnessFlowReplay')),
+  'claudeos-dashboard': lazy(() => import('./claudeos/CommandCenterMock')),
+};
 
 export function getDemo(demoId: string | undefined): DemoComponent | undefined {
   if (!demoId) return undefined;
