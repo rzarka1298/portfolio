@@ -68,7 +68,7 @@
 /* Architecture diagram (project pages): on touch screens one-finger drags
    scroll the page rather than being captured by the React Flow pane. */
 @media (max-width: 767px) {
-  .arch-diagram .react-flow__pane {
+  .arch-diagram--locked .react-flow__pane {
     touch-action: pan-y;
   }
 }

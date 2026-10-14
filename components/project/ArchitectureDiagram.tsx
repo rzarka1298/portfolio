@@ -29,6 +29,7 @@ import {
   Database,
   ExternalLink,
   FileCode,
+  Hand,
   Layers,
   LayoutDashboard,
   Monitor,
@@ -532,6 +533,13 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
   const isMobile = useIsMobile();
   const isDark = useIsDarkMode();
   const reduceMotion = useReducedMotion() ?? false;
+  // Touch screens: the canvas is locked so swipes scroll the page; "Explore"
+  // unlocks pan/pinch until "Done".
+  const [exploring, setExploring] = useState(false);
+  const canvasInteractive = !isMobile || exploring;
+  useEffect(() => {
+    if (!isMobile) setExploring(false);
+  }, [isMobile]);
 
   useEffect(() => warnOnBadReferences(architecture), [architecture]);
 
@@ -691,7 +699,13 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
         />
       )}
 
-      <div className="arch-diagram relative h-[420px] overflow-hidden rounded-xl border bg-card md:h-[560px]">
+      <div
+        className={cn(
+          'arch-diagram relative h-[420px] overflow-hidden rounded-xl border bg-card md:h-[560px]',
+          !canvasInteractive && 'arch-diagram--locked',
+          exploring && 'ring-2 ring-sky-400/60',
+        )}
+      >
         <ReactFlow<FlowNode, TraceFlowEdge>
           nodes={nodes}
           edges={edges}
@@ -712,16 +726,29 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
           zoomOnDoubleClick={false}
           panOnScroll={false}
           preventScrolling={false}
-          // On touch screens a one-finger drag scrolls the page instead of panning.
-          panOnDrag={!isMobile}
-          zoomOnPinch={!isMobile}
+          // On touch screens a one-finger drag scrolls the page unless exploring.
+          panOnDrag={canvasInteractive}
+          zoomOnPinch={canvasInteractive}
           proOptions={{ hideAttribution: false }}
-          style={{ background: 'transparent' }}
+          // Let the card background (site theme tokens) show through in both modes.
+          style={{ background: 'transparent', '--xy-background-color': 'transparent' } as React.CSSProperties}
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={isDark ? '#334155' : '#cbd5e1'} />
           <Controls showInteractive={false} position="bottom-left" />
           <FitOnResize />
         </ReactFlow>
+
+        {isMobile && (
+          <Button
+            size="sm"
+            variant={exploring ? 'default' : 'secondary'}
+            onClick={() => setExploring((v) => !v)}
+            className="absolute right-2 top-2 z-[5] shadow"
+            aria-pressed={exploring}
+          >
+            <Hand /> {exploring ? 'Done' : 'Explore'}
+          </Button>
+        )}
 
         <AnimatePresence>
           {selectedNode && !isMobile && (
