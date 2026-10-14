@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
-import Hero from './components/Hero';
-import About from './components/About';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
-import Skills from './components/Skills';
-import Contact from './components/Contact';
-import { motion } from 'framer-motion';
+import HomePage from './components/HomePage';
+import NotFound from './components/NotFound';
+import ScrollManager from './components/ScrollManager';
 import { projectId, publicAnonKey } from './utils/supabase/info';
 import { Toaster } from 'sonner';
 
+// Project pages pull in React Flow; keep them out of the home page bundle.
+const ProjectPageRoute = lazy(() => import('./components/project/ProjectPage'));
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
+  const location = useLocation();
+  const isFirstVisit = useRef(true);
 
   useEffect(() => {
     if (darkMode) {
@@ -21,18 +23,23 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Track site visit on mount - Updated to use new API
+  // Track a visit on first load and on every client-side route change.
+  // document.referrer only describes the initial page load, so later
+  // in-app navigations are reported with referrer 'internal'.
   useEffect(() => {
+    const firstVisit = isFirstVisit.current;
+    isFirstVisit.current = false;
+
     const trackVisit = async () => {
       try {
         const referrer = document.referrer || 'direct';
         const parseReferrer = (ref: string): string => {
-          if (!ref || ref === location.origin) return 'direct';
-          
+          if (!ref || ref === window.location.origin) return 'direct';
+
           try {
             const url = new URL(ref);
             const domain = url.hostname.toLowerCase();
-            
+
             if (domain.includes('google')) return 'google';
             if (domain.includes('linkedin')) return 'linkedin';
             if (domain.includes('github')) return 'github';
@@ -41,11 +48,16 @@ export default function App() {
             if (domain.includes('reddit')) return 'reddit';
             if (domain.includes('dev.to')) return 'dev.to';
             if (domain.includes('medium')) return 'medium';
-            
+
             return domain;
           } catch {
             return 'unknown';
           }
+        };
+
+        const visit = {
+          page: window.location.pathname,
+          referrer: firstVisit ? parseReferrer(referrer) : 'internal'
         };
 
         await fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/visit`, {
@@ -55,23 +67,17 @@ export default function App() {
             'Authorization': `Bearer ${publicAnonKey}`,
             'apikey': publicAnonKey
           },
-          body: JSON.stringify({
-            page: window.location.pathname,
-            referrer: parseReferrer(referrer)
-          })
+          body: JSON.stringify(visit)
         });
 
-        console.log('📊 Portfolio visit tracked:', { 
-          page: window.location.pathname, 
-          referrer: parseReferrer(referrer) 
-        });
+        console.log('📊 Portfolio visit tracked:', visit);
       } catch (error) {
         console.error('Failed to track visit:', error);
       }
     };
 
     trackVisit();
-  }, []);
+  }, [location.pathname]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -79,51 +85,22 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <ScrollManager />
       <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-      
-      <main>
-        <section id="hero">
-          <Hero />
-        </section>
-        
-        <section id="about" className="py-20">
-          <About />
-        </section>
-        
-        <section id="experience" className="py-20">
-          <Experience />
-        </section>
-        
-        <section id="projects" className="py-20">
-          <Projects />
-        </section>
-        
-        <section id="skills" className="py-20">
-          <Skills />
-        </section>
-        
-        <section id="contact" className="py-20">
-          <Contact />
-        </section>
-      </main>
-      
-      {/* Floating CTA */}
-      <motion.div
-        className="fixed bottom-8 right-8 z-50"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 2, type: "spring", stiffness: 260, damping: 20 }}
-      >
-        <motion.a
-          href="#contact"
-          className="bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Let's Connect
-        </motion.a>
-      </motion.div>
-      
+
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/projects/:slug"
+          element={
+            <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>
+              <ProjectPageRoute />
+            </Suspense>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
       {/* Toast notifications */}
       <Toaster position="top-right" />
     </div>

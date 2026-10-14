@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Moon, Sun, Menu, X } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 
 interface HeaderProps {
@@ -12,6 +13,9 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
   const [activeSection, setActiveSection] = useState('hero');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const isHome = pathname === '/';
 
   const navItems = [
     { id: 'hero', label: 'Home' },
@@ -42,12 +46,22 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Off the home page (e.g. a project page) there's no scroll-spy target.
+  useEffect(() => {
+    if (!isHome) setActiveSection('');
+  }, [isHome]);
+
   const scrollToSection = (sectionId: string) => {
+    setMobileMenuOpen(false);
+    if (!isHome) {
+      // ScrollManager scrolls to the section once the home page has rendered.
+      navigate(`/#${sectionId}`);
+      return;
+    }
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-    setMobileMenuOpen(false);
   };
 
   return (
@@ -69,8 +83,11 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
             transition={{ delay: 0.2 }}
           >
             <a 
-              href="#hero" 
-              onClick={() => scrollToSection('hero')}
+              href="/#hero"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection('hero');
+              }}
               className="font-semibold text-xl text-primary cursor-pointer"
             >
               Portfolio
