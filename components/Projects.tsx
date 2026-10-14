@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Github, ExternalLink, Play, Filter, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Github, ExternalLink, Play, Filter, Eye, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { hasProjectPage } from '../content/projects';
 
 interface Project {
   id: number;
@@ -21,6 +23,8 @@ interface Project {
   github?: string;
   /** Omitted when the project has no live demo — the Demo button is hidden */
   demo?: string;
+  /** Slug of an in-depth page at /projects/<slug>; the Deep dive button only shows if it is registered */
+  slug?: string;
 }
 
 export default function Projects() {
@@ -40,7 +44,21 @@ export default function Projects() {
       category: "AI/ML",
       tags: ["Go", "Python", "Temporal", "YAML", "OpenTelemetry", "Connect-Go", "sqlc"],
       github: "https://github.com/rzarka1298/harnessflow",
-      results: "Open-source agent orchestration platform"
+      results: "Open-source agent orchestration platform",
+      slug: "harnessflow"
+    },
+    {
+      // New id (not renumbered) so existing per-project view analytics keep their keys
+      id: 8,
+      title: "ClaudeOS",
+      description: "A command center for running, orchestrating and remembering the work of many Claude agent sessions.",
+      longDescription: "ClaudeOS brings agent sessions, scheduled automations and a managed knowledge vault into one place, so long-running AI-assisted work keeps its context instead of scattering it across terminals and notes. Placeholder copy — see the deep-dive page for the full architecture.",
+      image: "/projects/project-1.jpg",
+      category: "AI/ML",
+      tags: ["TypeScript", "Claude", "Agents", "Automation"],
+      github: "https://github.com/rzarka1298/ClaudeOS",
+      results: "Agent orchestration command center",
+      slug: "claudeos"
     },
     {
       id: 2,
@@ -281,11 +299,20 @@ export default function Projects() {
                   ))}
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="text-sm text-primary">
                     {project.results}
                   </div>
                   
+                  <div className="flex items-center gap-1">
+                  {project.slug && hasProjectPage(project.slug) && (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/projects/${project.slug}`}>
+                        Deep dive
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  )}
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button 
@@ -323,8 +350,16 @@ export default function Projects() {
                             {projectViews[project.id]} views
                           </div>
                         )}
-                        {(project.github || project.demo) && (
-                          <div className="flex space-x-4 pt-4">
+                        {(project.github || project.demo || (project.slug && hasProjectPage(project.slug))) && (
+                          <div className="flex flex-wrap gap-4 pt-4">
+                            {project.slug && hasProjectPage(project.slug) && (
+                              <Button asChild>
+                                <Link to={`/projects/${project.slug}`}>
+                                  <ArrowRight className="w-4 h-4 mr-2" />
+                                  Deep dive
+                                </Link>
+                              </Button>
+                            )}
                             {project.github && (
                               <Button asChild>
                                 <a href={project.github} target="_blank" rel="noopener noreferrer">
@@ -346,6 +381,7 @@ export default function Projects() {
                       </div>
                     </DialogContent>
                   </Dialog>
+                  </div>
                 </div>
               </CardContent>
             </Card>
