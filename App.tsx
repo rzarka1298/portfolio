@@ -32,7 +32,7 @@ export default function App() {
 
     const trackVisit = async () => {
       try {
-        const referrer = document.referrer || 'direct';
+        const referrer = document.referrer;
         const parseReferrer = (ref: string): string => {
           if (!ref || ref === window.location.origin) return 'direct';
 
