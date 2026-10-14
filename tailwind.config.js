@@ -7,6 +7,7 @@ export default {
     './App.tsx',
     './components/**/*.{ts,tsx}',
     './lib/**/*.{ts,tsx}',
+    './content/**/*.{ts,tsx}',
   ],
   prefix: "",
   theme: {
