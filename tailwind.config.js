@@ -19,7 +19,26 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
       colors: {
+        // Blueprint palette (see styles/globals.css). Supports /opacity.
+        bp: {
+          bg: "hsl(var(--bp-bg) / <alpha-value>)",
+          deep: "hsl(var(--bp-bg-deep) / <alpha-value>)",
+          panel: "hsl(var(--bp-panel) / <alpha-value>)",
+          "panel-2": "hsl(var(--bp-panel-2) / <alpha-value>)",
+          grid: "hsl(var(--bp-grid) / <alpha-value>)",
+          ink: "hsl(var(--bp-ink) / <alpha-value>)",
+          "ink-dim": "hsl(var(--bp-ink-dim) / <alpha-value>)",
+          line: "hsl(var(--bp-line) / <alpha-value>)",
+          "line-soft": "hsl(var(--bp-line-soft) / <alpha-value>)",
+          signal: "hsl(var(--bp-signal) / <alpha-value>)",
+          "signal-ink": "hsl(var(--bp-signal-ink) / <alpha-value>)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -58,6 +77,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      transitionTimingFunction: {
+        blueprint: "cubic-bezier(0.22, 1, 0.36, 1)",
       },
       keyframes: {
         "accordion-down": {

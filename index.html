@@ -1,10 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logoRZ.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0B2341" />
     <title>Rugved Zarkar - Portfolio</title>
+    <meta
+      name="description"
+      content="Rugved Zarkar, software engineer at AWS. Systems that hold up in production: DNS infrastructure, AI agent orchestration, wearable robotics."
+    />
+    <!-- Apply the saved theme before first paint (dark is the default). -->
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('theme') === 'light') {
+            var root = document.documentElement;
+            root.classList.remove('dark');
+            root.classList.add('light');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    />
   </head>
   <body>
     <div id="root"></div>
