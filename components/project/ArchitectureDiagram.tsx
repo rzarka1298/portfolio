@@ -417,13 +417,13 @@ function NodePanel({ node, githubUrl, isMobile, onClose }: NodePanelProps) {
           aria-modal="true"
           aria-labelledby="arch-panel-title"
           data-lenis-prevent
-          className="fixed inset-x-0 bottom-0 z-[61] max-h-[75vh] overflow-y-auto rounded-t-2xl border-t bg-background p-5 pb-8 shadow-2xl"
+          className="fixed inset-x-0 bottom-0 z-[61] max-h-[75vh] overflow-y-auto border-t border-bp-line/60 bg-bp-panel p-5 pb-8 shadow-2xl"
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         >
-          <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-muted" aria-hidden="true" />
+          <div className="mx-auto mb-4 h-1 w-10 bg-bp-line-soft/60" aria-hidden="true" />
           <div className="relative">{body}</div>
         </motion.div>
       </>
@@ -466,11 +466,11 @@ function TraceControls({ traces, traceId, onTraceChange, playing, atEnd, onPlay,
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <label className="flex min-w-0 items-center gap-2 text-sm">
-        <span className="shrink-0 text-muted-foreground">Trace a request</span>
+        <span className="bp-label shrink-0 text-bp-line">Trace a request</span>
         <select
           value={traceId}
           onChange={(event) => onTraceChange(event.target.value)}
-          className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
+          className="h-9 min-w-0 flex-1 border border-bp-line-soft/60 bg-bp-panel px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-bp-signal"
         >
           {traces.map((t) => (
             <option key={t.id} value={t.id}>{t.name}</option>
@@ -479,18 +479,18 @@ function TraceControls({ traces, traceId, onTraceChange, playing, atEnd, onPlay,
       </label>
       <div className="flex gap-2">
         {playing ? (
-          <Button size="sm" onClick={onPause} aria-label="Pause trace">
+          <Button size="sm" onClick={onPause} aria-label="Pause trace" className="rounded-none bg-bp-signal text-[#0B2341] hover:bg-bp-signal/90">
             <Pause /> Pause
           </Button>
         ) : (
-          <Button size="sm" onClick={onPlay} aria-label={atEnd ? 'Replay trace' : 'Play trace'}>
+          <Button size="sm" onClick={onPlay} aria-label={atEnd ? 'Replay trace' : 'Play trace'} className="rounded-none bg-bp-signal text-[#0B2341] hover:bg-bp-signal/90">
             <Play /> {atEnd ? 'Replay' : 'Play'}
           </Button>
         )}
-        <Button size="sm" variant="outline" onClick={onStep} disabled={atEnd} aria-label="Next step">
+        <Button size="sm" variant="outline" onClick={onStep} disabled={atEnd} aria-label="Next step" className="rounded-none">
           <SkipForward /> Step
         </Button>
-        <Button size="sm" variant="outline" onClick={onReset} aria-label="Reset trace">
+        <Button size="sm" variant="outline" onClick={onReset} aria-label="Reset trace" className="rounded-none">
           <RotateCcw /> Reset
         </Button>
       </div>
@@ -725,7 +725,7 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
             size="sm"
             variant={exploring ? 'default' : 'secondary'}
             onClick={() => setExploring((v) => !v)}
-            className="absolute right-2 top-2 z-[5] shadow"
+            className="absolute right-2 top-2 z-[5] rounded-none"
             aria-pressed={exploring}
           >
             <Hand /> {exploring ? 'Done' : 'Explore'}
@@ -749,7 +749,7 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
         <div className="min-h-[4.5rem] border border-bp-line-soft/40 bg-bp-panel/60 px-4 py-3" aria-live="polite">
           {step ? (
             <>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">
+              <div className="bp-label mb-1 text-bp-signal-ink">
                 Step {stepIndex + 1} of {trace.steps.length}
               </div>
               <div className="font-medium">{step.title}</div>
