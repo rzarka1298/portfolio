@@ -55,7 +55,7 @@ export default function SheetSection({
             {pad2(index)}/{pad2(total)}
           </span>
         </div>
-        <DimensionedTitle id={headingId} className="min-w-[7rem] text-3xl font-medium leading-[1.05] sm:text-4xl md:text-5xl">
+        <DimensionedTitle id={headingId} className="text-3xl font-medium leading-[1.05] sm:text-4xl md:text-5xl">
           {title}
         </DimensionedTitle>
         {intro && <div className="mt-6 max-w-[62ch] text-base leading-relaxed text-bp-ink-dim md:text-lg">{intro}</div>}

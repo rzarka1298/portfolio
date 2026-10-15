@@ -133,7 +133,7 @@ export function DimensionedTitle({
         />
         <span className="h-3 w-px bg-current" />
         {value && (
-          <span className="bp-label absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-bp-line">
+          <span className="bp-label absolute left-1/2 top-1/2 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-bp-line">
             {value}
           </span>
         )}

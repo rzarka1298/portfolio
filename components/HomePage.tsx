@@ -32,14 +32,14 @@ function usePastHero() {
   return past;
 }
 
-/** True while the contact section is meaningfully in view. */
-function useContactVisible() {
+/** True while the section with this id is meaningfully in view. */
+function useSectionVisible(id: string) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     let observer: IntersectionObserver | undefined;
     let timer: number | undefined;
     const attach = () => {
-      const el = document.getElementById('contact');
+      const el = document.getElementById(id);
       if (!el) {
         timer = window.setTimeout(attach, 200);
         return;
@@ -54,16 +54,18 @@ function useContactVisible() {
       window.clearTimeout(timer);
       observer?.disconnect();
     };
-  }, []);
+  }, [id]);
   return visible;
 }
 
 export default function HomePage() {
   // The hero already carries contact links; the floating CTA joins later.
-  // Hidden again once the contact sheet itself is on screen.
+  // Hidden again over the full-stage project showcase (it would cover the
+  // stage's corner) and once the contact sheet itself is on screen.
   const pastHero = usePastHero();
-  const atContact = useContactVisible();
-  const showCta = pastHero && !atContact;
+  const atProjects = useSectionVisible('projects');
+  const atContact = useSectionVisible('contact');
+  const showCta = pastHero && !atProjects && !atContact;
   return (
     <>
       <main id="main">
