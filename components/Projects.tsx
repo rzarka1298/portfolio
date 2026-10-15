@@ -1,408 +1,244 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Github, ExternalLink, Play, Filter, Eye, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
-import { hasProjectPage } from '../content/projects';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useLocation } from 'react-router-dom';
+import { DimensionedTitle, useMediaQuery, useReducedMotion } from './blueprint';
+import { isFeaturedProjectId } from '../content/featured';
+import { PROJECTS_SECTION_ID, useProjectSelection } from '../lib/projectSelection';
+import { scrollToId } from '../lib/motion/lenis';
+import MobileShowcase from './showcase/MobileShowcase';
+import ProjectStage from './showcase/ProjectStage';
+import ShowcaseRail from './showcase/ShowcaseRail';
+import { panelId, tabId } from './showcase/tablistKeys';
+import { findShowcaseIndex, showcaseProjects } from './showcase/showcaseData';
+import { trackProjectView } from './showcase/trackProjectView';
 
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  longDescription: string;
-  image: string;
-  category: string;
-  tags: string[];
-  results: string;
-  /** Omitted when the project has no public repo — the Code button is hidden */
-  github?: string;
-  /** Omitted when the project has no live demo — the Demo button is hidden */
-  demo?: string;
-  /** Slug of an in-depth page at /projects/<slug>; the Deep dive button only shows if it is registered */
-  slug?: string;
+const WIPE_S = 0.85;
+const WIPE_EASE = [0.65, 0, 0.35, 1] as const;
+const HASH_PREFIX = `#${PROJECTS_SECTION_ID}/`;
+
+/** `#projects/<slug>` → index, or -1. */
+function indexFromHash(hash: string) {
+  if (!hash.startsWith(HASH_PREFIX)) return -1;
+  return findShowcaseIndex(decodeURIComponent(hash.slice(HASH_PREFIX.length)));
 }
 
+// The incoming stage is revealed by a scan line sweeping down (or up, going
+// back through the list) while the outgoing one fades underneath.
+const wipe: Variants = {
+  enter: (dir: number) => ({ clipPath: dir >= 0 ? 'inset(0% 0% 100% 0%)' : 'inset(100% 0% 0% 0%)', zIndex: 2 }),
+  center: { clipPath: 'inset(0% 0% 0% 0%)', zIndex: 2, transition: { duration: WIPE_S, ease: WIPE_EASE } },
+  exit: { opacity: 0, zIndex: 1, transition: { duration: 0.2, delay: WIPE_S } },
+};
+const scan: Variants = {
+  enter: (dir: number) => ({ top: dir >= 0 ? '0%' : '100%', opacity: 1 }),
+  center: (dir: number) => ({
+    top: dir >= 0 ? '100%' : '0%',
+    opacity: [1, 1, 0],
+    transition: { top: { duration: WIPE_S, ease: WIPE_EASE }, opacity: { duration: WIPE_S + 0.2, times: [0, 0.8, 1] } },
+  }),
+};
+
+/**
+ * Projects (#projects): a full-height showcase. Desktop: an index rail of
+ * tabs beside a stage the selected project takes over (live architecture
+ * preview, overview, stats, links). Small screens: swipeable cards.
+ *
+ * Selection comes from the tabs, the hero's project nodes
+ * (lib/projectSelection) and a `#projects/<slug>` deep link.
+ */
 export default function Projects() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const reduced = useReducedMotion();
+  const desktop = useMediaQuery('(min-width: 1024px)');
+  const { hash } = useLocation();
+  const { selectedId, seq, source, select } = useProjectSelection();
 
-  const [selectedFilter, setSelectedFilter] = useState('All');
-  const [projectViews] = useState<Record<string, number>>({});
+  const [state, setState] = useState(() => {
+    const fromHash = typeof window !== 'undefined' ? indexFromHash(window.location.hash) : -1;
+    const fromStore = findShowcaseIndex(selectedId);
+    return { index: fromHash >= 0 ? fromHash : fromStore >= 0 ? fromStore : 0, dir: 1, n: 0 };
+  });
+  const active = showcaseProjects[state.index];
+  const indexRef = useRef(state.index);
+  indexRef.current = state.index;
 
-  const projects: Project[] = [
-    {
-      id: 1,
-      title: "HarnessFlow",
-      description: "Turns a PRD and a local Git repo into a durable, verified coding run: plan, implement in an isolated worktree, check, and repair within an explicit budget.",
-      longDescription: "HarnessFlow plans a PRD into tasks linked to executable acceptance checks, freezes those checks after an independent review, then drives Codex coding attempts in an isolated Git worktree. A run only completes when every frozen check passes at HEAD and a per-requirement judge agrees; failures and review findings trigger bounded repair attempts, and no-progress loops are stopped. Orchestration is a Temporal workflow advancing one recoverable phase at a time, with Postgres holding run state so runs survive crashes, pauses and restarts. It is built on the author's earlier Go + Python YAML workflow platform, which remains as its foundation.",
-      image: "/projects/project-2.jpg",
-      category: "AI/ML",
-      tags: ["Go", "Python", "Temporal", "Postgres", "Next.js", "Codex CLI"],
-      github: "https://github.com/rzarka1298/harnessflow",
-      results: "Verified PRD-to-branch coding runs",
-      slug: "harnessflow"
-    },
-    {
-      // New id (not renumbered) so existing per-project view analytics keep their keys
-      id: 8,
-      title: "Claude Command Center",
-      description: "A local-first command center for Claude Code: an Obsidian plugin backed by a launchd-supervised macOS service, with live session telemetry and a human approval inbox.",
-      longDescription: "Claude Command Center (repo: ClaudeOS) shows every Claude Code session live, including ones started outside the dashboard, via non-blocking hooks and an event stream that replays missed events after a reconnect. The plugin talks to its companion service over an authenticated Unix domain socket, so no browser can reach it; secrets live only in the macOS Keychain. Consequential actions go through a one-time, payload-hashed approval inbox, and managed knowledge-vault writes are scope-checked and atomic. A 12-package pnpm + Turborepo TypeScript monorepo with Zod-typed domain schemas and boundary-enforcing CI.",
-      image: "/projects/project-1.jpg",
-      category: "AI/ML",
-      tags: ["TypeScript", "Obsidian", "Node.js", "SQLite", "macOS", "Claude Code"],
-      github: "https://github.com/rzarka1298/ClaudeOS",
-      results: "Local-first agent command center",
-      slug: "claudeos"
-    },
-    {
-      id: 2,
-      title: "Lane-Optimize",
-      description: "Reinforcement learning for real-time highway lane optimization in SUMO, with a live FastAPI/React dashboard.",
-      longDescription: "Lane-Optimize applies reinforcement learning to real-time highway lane assignment inside the SUMO traffic simulator. It implements a from-scratch PyTorch DQN alongside Stable-Baselines3 PPO and a multi-agent shared-policy PPO, benchmarked against rule-based baselines to quantify how much RL actually buys over conventional traffic heuristics. A live FastAPI backend and React dashboard visualize policy behavior and throughput as episodes run.",
-      image: "/projects/project-3.jpg",
-      category: "AI/ML",
-      tags: ["PyTorch", "Stable-Baselines3", "SUMO", "FastAPI", "React", "Multi-Agent RL"],
-      github: "https://github.com/rzarka1298/Lane-Optimize",
-      results: "RL vs. rule-based traffic benchmarks"
-    },
-    {
-      id: 3,
-      title: "Calico Smartlabs",
-      description: "A fully functional miniature relocatable wearable system with fast and precise locomotion for on-body interaction, actuation, and sensing.",
-      longDescription: "Calico is a miniature robot that relocates across the human body while providing interactive touchscreen capabilities. Built on an ESP32-S3 with C++ and Python firmware, it integrates an IMU sensor pipeline and WiFi communication stack, displaying anatomical imagery on its touchscreen UI. Published at ACM IMWUT, featured in IEEE Spectrum and The Verge, and demonstrated at CHI and UbiComp.",
-      image: "/projects/calico.png",
-      category: "Hardware",
-      tags: ["C++", "Python", "ESP32-S3", "IMU Sensors", "Embedded Systems"],
-      github: "https://github.com/jsli96/onBodyRobot",
-      demo: "https://smartlab.cs.umd.edu",
-      results: "ACM IMWUT published, featured in IEEE Spectrum"
-    },
-    {
-      id: 4,
-      title: "BiasGPT",
-      description: "A DistilBERT bias classifier paired with counterfactual demographic swapping to measure how text sentiment shifts when identity changes.",
-      longDescription: "BiasGPT fine-tunes a DistilBERT sequence classifier to score text for demographic bias, then probes it with counterfactuals: a spaCy-driven swap engine rewrites names, pronouns, and surnames to generate matched pairs, exposing how much a model's judgment depends on identity rather than content. The system is served through a FastAPI backend with a React frontend, backed by an automated nightly pipeline that regenerates data, retrains, and redeploys the classifier.",
-      image: "/projects/project-4.jpg",
-      category: "AI/ML",
-      tags: ["PyTorch", "DistilBERT", "HuggingFace", "spaCy", "FastAPI", "React"],
-      github: "https://github.com/rzarka1298/BiasGPT",
-      results: "Automated nightly retrain and deploy"
-    },
-    {
-      id: 5,
-      title: "Agentic RAG for IP",
-      description: "A Retrieval-Augmented Generation pipeline leveraging Llama Stack to parse, vectorize, and query patent XML files.",
-      longDescription: "This project provides high-relevance document retrieval and dynamic, context-driven answers by integrating open-source LLM models and a vector database (AWS) to handle large volumes of patent text. The system enables semantically rich searching and automated patent analysis, changing how intellectual property research is conducted.",
-      image: "/projects/llama.png",
-      category: "AI/ML",
-      tags: ["Python", "llama-stack", "vLLM", "FAISS", "Inference Models"],
-      results: "Automated patent analysis pipeline"
-    },
-    {
-      id: 6,
-      title: "Neuromaker International Bioengineering Competition",
-      description: "Built a prosthetic hand to convert speech to American Sign Language using Google APIs, Python, and RaspberryOS.",
-      longDescription: "This project created a prosthetic hand capable of translating spoken language into American Sign Language gestures in real time. Using Google's speech recognition APIs and custom hardware control, the system provides accessibility solutions for the deaf and hard-of-hearing community, demonstrating the intersection of AI, hardware engineering, and social impact.",
-      image: "/projects/neuromakerHand.jpeg",
-      category: "Hardware",
-      tags: ["Google API", "Python", "RaspberryOS", "Hardware Control"],
-      results: "International competition recognition"
-    },
-    {
-      id: 7,
-      title: "Portfolio Website",
-      description: "This site — a personal portfolio built with React, Tailwind, and Framer Motion, with dark mode and a Supabase-backed contact form.",
-      longDescription: "This responsive portfolio showcases professional work and technical skills through a modern, clean design. Built with React, TypeScript, and Tailwind CSS, it features smooth Framer Motion animations, class-based dark mode, and a Supabase Edge Function backing the contact form and visitor analytics. Deployed on AWS Amplify.",
-      image: "/projects/project-1.jpg",
-      category: "Web Dev",
-      tags: ["React", "TypeScript", "Tailwind", "Framer Motion", "Supabase", "AWS Amplify"],
-      github: "https://github.com/rzarka1298/portfolio",
-      demo: "https://main.dv1zd1ccteche.amplifyapp.com/",
-      results: "Live on AWS Amplify"
+  const show = useCallback((next: number, opts: { track?: boolean; hash?: boolean } = {}) => {
+    const prev = indexRef.current;
+    if (next === prev || next < 0 || next >= showcaseProjects.length) return false;
+    setState((st) => ({ index: next, dir: next > prev ? 1 : -1, n: st.n + 1 }));
+    const project = showcaseProjects[next];
+    if (opts.track) trackProjectView(project);
+    if (opts.hash) {
+      const url = `${window.location.pathname}${window.location.search}${HASH_PREFIX}${project.slug}`;
+      window.history.replaceState(window.history.state, '', url);
     }
-  ];
-
-  // Derive filters from the projects themselves so no filter can render an empty grid
-  const filters = ['All', ...Array.from(new Set(projects.map(project => project.category)))];
-
-  const filteredProjects = selectedFilter === 'All'
-    ? projects
-    : projects.filter(project => project.category === selectedFilter);
-
-  // Load project view counts on component mount
-  useEffect(() => {
-    // Temporarily disabled to prevent 404 errors
-    // Will be re-enabled when API endpoints are fixed
-    /*
-    const loadProjectViews = async () => {
-      try {
-        const response = await fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/projects`, {
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-            'apikey': publicAnonKey
-          }
-        });
-        
-        if (response.ok) {
-          const { analytics } = await response.json();
-          const viewCounts = analytics.reduce((acc: Record<string, number>, item: any) => {
-            acc[item.projectId] = item.viewCount;
-            return acc;
-          }, {});
-          setProjectViews(viewCounts);
-        }
-      } catch (error) {
-        console.error('Failed to load project analytics:', error);
-      }
-    };
-
-    loadProjectViews();
-    */
+    return true;
   }, []);
 
-  const trackProjectView = async (project: Project) => {
-    // For now, just log project views since we don't have the project-view endpoint
-    console.log('📊 Project viewed:', project.title);
-    
-    // Alternative: Track as a regular visit with project info
-    try {
-      fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/visit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
-          'apikey': publicAnonKey
-        },
-        body: JSON.stringify({
-          page: `/project/${project.id}`,
-          referrer: 'project-gallery'
-        })
-      });
-    } catch (error) {
-      console.error('Failed to track project view:', error);
-    }
-  };
+  /** A visitor picked a tab (rail, chip or swipe). */
+  const choose = useCallback(
+    (next: number) => {
+      if (!show(next, { track: true, hash: true })) return;
+      const slug = showcaseProjects[next].slug;
+      // Mirror the selection for the hero; non-featured projects clear it.
+      select(isFeaturedProjectId(slug) ? slug : null, { source: 'projects' });
+    },
+    [select, show],
+  );
+
+  // Hero node clicks (and any other writer). `seq` catches repeat clicks.
+  useEffect(() => {
+    if (!selectedId || source === 'projects') return;
+    show(findShowcaseIndex(selectedId), { track: true, hash: true });
+  }, [selectedId, seq, source, show]);
+
+  // Deep link: /#projects/<slug>, on load and on later hash navigation.
+  const firstHash = useRef(true);
+  useEffect(() => {
+    const i = indexFromHash(hash || window.location.hash);
+    const first = firstHash.current;
+    firstHash.current = false;
+    if (i < 0) return undefined;
+    show(i, { track: true });
+    // ScrollManager can't resolve "projects/<slug>" as an id; scroll here.
+    const t = window.setTimeout(() => scrollToId(PROJECTS_SECTION_ID, { immediate: first }), first ? 60 : 0);
+    if (!first) return () => window.clearTimeout(t);
+    // On a cold load the sections above keep growing (fonts, images) after
+    // that first jump; settle once more unless the visitor has scrolled.
+    let interacted = false;
+    const stop = () => {
+      interacted = true;
+    };
+    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
+    events.forEach((e) => window.addEventListener(e, stop, { passive: true, once: true }));
+    const settle = window.setTimeout(() => {
+      const el = document.getElementById(PROJECTS_SECTION_ID);
+      if (!interacted && el && Math.abs(el.getBoundingClientRect().top - 72) > 8) {
+        scrollToId(PROJECTS_SECTION_ID, { immediate: true });
+      }
+    }, 900);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(settle);
+      events.forEach((e) => window.removeEventListener(e, stop));
+    };
+  }, [hash, show]);
 
   return (
-    <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="text-4xl md:text-5xl mb-4">Featured Projects</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A showcase of my recent work spanning AI infrastructure, machine learning, and wearable robotics
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Filter Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-wrap justify-center gap-2 mb-12"
-      >
-        {filters.map((filter) => (
-          <Button
-            key={filter}
-            variant={selectedFilter === filter ? "default" : "outline"}
-            onClick={() => setSelectedFilter(filter)}
-            className="text-sm"
+    <section
+      id={PROJECTS_SECTION_ID}
+      aria-labelledby="projects-title"
+      className="relative py-24 lg:flex lg:h-[calc(100svh-4.5rem)] lg:max-h-[62rem] lg:min-h-[46rem] lg:flex-col lg:py-8"
+    >
+      <div className="relative mx-auto w-full max-w-[90rem] px-4 sm:px-6 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:px-10">
+        {desktop ? (
+          <div
+            className="grid min-h-0 flex-1 grid-cols-[var(--rail-w)_minmax(0,1fr)] gap-[var(--rail-gap)]"
+            style={{ '--rail-w': '19rem', '--rail-gap': '2.5rem' } as CSSProperties}
           >
-            <Filter className="w-4 h-4 mr-2" />
-            {filter}
-          </Button>
-        ))}
-      </motion.div>
-
-      {/* Projects Grid */}
-      <motion.div 
-        layout
-        className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-      >
-        {filteredProjects.map((project, index) => (
-          <motion.div
-            key={project.id}
-            layout
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.1 * index }}
-            whileHover={{ y: -5 }}
-            className="group"
-          >
-            <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300">
-              <div className="relative overflow-hidden">
-                <ImageWithFallback
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+            <div className="flex min-h-0 flex-col">
+              <SectionHeading />
+              <div className="mt-6 min-h-0 flex-1">
+                <ShowcaseRail
+                  projects={showcaseProjects}
+                  activeIndex={state.index}
+                  onSelect={choose}
+                  labelledBy="projects-title"
                 />
-                {(project.github || project.demo) && (
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-4">
-                    {project.github && (
-                      <Button size="sm" variant="secondary" asChild>
-                        <a href={project.github} target="_blank" rel="noopener noreferrer">
-                          <Github className="w-4 h-4 mr-2" />
-                          Code
-                        </a>
-                      </Button>
-                    )}
-                    {project.demo && (
-                      <Button size="sm" asChild>
-                        <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Demo
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                )}
-                
-                {/* View count */}
-                {projectViews[project.id] && (
-                  <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center">
-                    <Eye className="w-3 h-3 mr-1" />
-                    {projectViews[project.id]}
-                  </div>
-                )}
               </div>
-              
-              <CardHeader>
-                <div className="flex items-start justify-between mb-2">
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors duration-200">
-                    {project.title}
-                  </CardTitle>
-                  <Badge variant="secondary" className="shrink-0">
-                    {project.category}
-                  </Badge>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {project.description}
-                </p>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-sm text-primary">
-                    {project.results}
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                  {project.slug && hasProjectPage(project.slug) && (
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/projects/${project.slug}`}>
-                        Deep dive
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  )}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => trackProjectView(project)}
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        Learn More
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl">{project.title}</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <ImageWithFallback
-                          src={project.image}
-                          alt={project.title}
-                          className="w-full h-64 object-cover rounded-lg"
-                        />
-                        <p className="text-muted-foreground leading-relaxed">
-                          {project.longDescription}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {project.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        {projectViews[project.id] && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Eye className="w-4 h-4 mr-1" />
-                            {projectViews[project.id]} views
-                          </div>
-                        )}
-                        {(project.github || project.demo || (project.slug && hasProjectPage(project.slug))) && (
-                          <div className="flex flex-wrap gap-4 pt-4">
-                            {project.slug && hasProjectPage(project.slug) && (
-                              <Button asChild>
-                                <Link to={`/projects/${project.slug}`}>
-                                  <ArrowRight className="w-4 h-4 mr-2" />
-                                  Deep dive
-                                </Link>
-                              </Button>
-                            )}
-                            {project.github && (
-                              <Button asChild>
-                                <a href={project.github} target="_blank" rel="noopener noreferrer">
-                                  <Github className="w-4 h-4 mr-2" />
-                                  View Code
-                                </a>
-                              </Button>
-                            )}
-                            {project.demo && (
-                              <Button variant="outline" asChild>
-                                <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Live Demo
-                                </a>
-                              </Button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.div>
+            </div>
 
-      {/* Call to Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="text-center mt-16"
-      >
-        <p className="text-lg text-muted-foreground mb-6">
-          Want to see more of my work or discuss a potential collaboration?
-        </p>
-        <Button size="lg" onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
-          Let's Work Together
-        </Button>
-      </motion.div>
-    </div>
+            <div id={panelId(active.slug)} role="tabpanel" aria-labelledby={tabId(active.slug)} className="relative grid min-h-0">
+              {reduced ? (
+                <div className="[grid-area:1/1] min-h-0">
+                  <ProjectStage
+                    key={active.slug}
+                    project={active}
+                    position={state.index + 1}
+                    total={showcaseProjects.length}
+                    variant="desktop"
+                    active
+                    reduced
+                    headingId={`project-stage-title-${active.slug}`}
+                  />
+                </div>
+              ) : (
+                <AnimatePresence initial={false} custom={state.dir}>
+                  <motion.div
+                    key={active.slug}
+                    custom={state.dir}
+                    variants={wipe}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="relative [grid-area:1/1] min-h-0"
+                  >
+                    <ProjectStage
+                      project={active}
+                      position={state.index + 1}
+                      total={showcaseProjects.length}
+                      variant="desktop"
+                      active
+                      reduced={false}
+                      enterDelay={0.45}
+                      headingId={`project-stage-title-${active.slug}`}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              )}
+              {!reduced && state.n > 0 && (
+                // The plotter head: leads the incoming stage's reveal. Sits outside
+                // the clipped layer so the clip can't hide it.
+                <motion.span
+                  key={state.n}
+                  aria-hidden="true"
+                  custom={state.dir}
+                  variants={scan}
+                  initial="enter"
+                  animate="center"
+                  className="pointer-events-none absolute inset-x-0 z-20 h-0.5 bg-bp-line shadow-[0_0_16px_3px_hsl(var(--bp-line)/0.7)]"
+                >
+                  <span className="bp-label absolute -top-5 right-3 text-bp-line">{active.partNo} / Redraw</span>
+                </motion.span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            <SectionHeading />
+            <div className="mt-8">
+              <MobileShowcase
+                projects={showcaseProjects}
+                activeIndex={state.index}
+                onSelect={(i) => choose(i)}
+                reduced={reduced}
+                labelledBy="projects-title"
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SectionHeading() {
+  return (
+    <header>
+      <div className="mb-5 flex items-center gap-3">
+        <span className="bp-label text-bp-signal-ink">04</span>
+        <span className="bp-label">/</span>
+        <span className="bp-label text-bp-line">Projects</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-bp-line-soft/50" />
+        <span aria-hidden="true" className="bp-label">
+          SHEET 04
+        </span>
+      </div>
+      <DimensionedTitle id="projects-title" className="text-4xl font-medium leading-[1.05] lg:text-[2.75rem]">
+        Systems I&rsquo;ve built
+      </DimensionedTitle>
+      <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-bp-ink-dim lg:text-sm">
+        Eight projects, each drawn as its architecture. Pick one to watch a request move through it, then open the case study.
+      </p>
+    </header>
   );
 }

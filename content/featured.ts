@@ -7,8 +7,8 @@ import { projectPages } from './projects';
  * (lib/projectSelection.ts). The Projects section should use the same ids for
  * its tabs. For projects with a deep-dive page, `id` equals the page slug.
  *
- * Titles for deep-dive projects come from content/projects; `result` lines
- * are the existing `results` strings from components/Projects.tsx.
+ * Titles for deep-dive projects come from content/projects. `result` lines
+ * are one-line outcomes, also shown in the Projects showcase rail.
  */
 export const FEATURED_PROJECT_IDS = ['harnessflow', 'claudeos', 'lane-optimize', 'calico', 'biasgpt'] as const;
 
@@ -62,7 +62,7 @@ export const featuredProjects: FeaturedProject[] = [
     id: 'biasgpt',
     partNo: 'P-05',
     title: 'BiasGPT',
-    result: 'Automated nightly retrain and deploy',
+    result: 'Counterfactual identity-swap bias checks',
     stack: ['DistilBERT', 'spaCy', 'FastAPI'],
   },
 ];

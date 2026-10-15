@@ -159,3 +159,64 @@ Toasts, placeholders and the form's request are unchanged.
 ### Home page (`components/HomePage.tsx`)
 
 The floating "Let's connect" button now also hides while the Contact section is on screen.
+
+## Projects
+
+The card grid in `components/Projects.tsx` became a tabbed showcase (`components/showcase/`).
+Text now comes from each project's content file (`content/projects/<slug>.ts`); short
+summaries live in `components/showcase/showcaseData.ts`, and every number in them is
+stated in the content file.
+
+### Section chrome
+
+| Where | Before | After |
+|---|---|---|
+| Section label | *(none)* | 04 / Projects, Sheet 04 |
+| Heading | Featured Projects | Systems I've built |
+| Intro | A showcase of my recent work spanning AI infrastructure, machine learning, and wearable robotics | Eight projects, each drawn as its architecture. Pick one to watch a request move through it, then open the case study. |
+| Filters | All / AI/ML / Hardware / Web Dev | *(removed: every project now has a tab)* |
+| Card buttons | Code, View Code / Demo, Live Demo / Deep dive / Learn More (dialog) | GitHub / Live (Portfolio), Publication (Calico) / **Open case study →** / *(dialog removed; the overview is on the stage)* |
+| View-count badge | "N views" (loading was already disabled) | *(removed)* |
+| Closing CTA | Want to see more of my work or discuss a potential collaboration? + Let's Work Together | *(removed; the floating "Let's connect" button and Contact remain)* |
+| New stage labels | *(none)* | P-01 to P-08; FIG. 04.n / Architecture; the content file's status line; n / 08; Trace, step counter (03/10), step title, trace name; Problem |
+| New controls (accessible names) | *(none)* | Play trace / Pause trace; Next trace step; "Open the <name> case study"; "<name> on GitHub (opens in a new tab)"; "<name> live / publication (opens in a new tab)" |
+| Diagram | *(none)* | Figure name "<name> architecture: N components. Select one for a summary."; node buttons "<label>, <kind>"; tooltips show kind, label, summary and up to four technologies from the content file |
+| Transition label | *(none)* | P-0n / Redraw (decorative, aria-hidden) |
+| Reduced motion | *(none)* | Trace counter "All" and "<trace name>: main path highlighted" |
+
+### Per project: rail line (result) and overview
+
+Overviews replace the old card descriptions; problem lines and stats are new.
+
+| Project | Before: title / result | After: name / result |
+|---|---|---|
+| P-01 | HarnessFlow / Verified PRD-to-branch coding runs | unchanged |
+| P-02 | Claude Command Center / Local-first agent command center | unchanged |
+| P-03 | Lane-Optimize / RL vs. rule-based traffic benchmarks | unchanged |
+| P-04 | **Calico Smartlabs** / ACM IMWUT published, featured in IEEE Spectrum | **Calico** / unchanged (hero line, kept) |
+| P-05 | BiasGPT / **Automated nightly retrain and deploy** | BiasGPT / **Counterfactual identity-swap bias checks** (also the hero node, via `content/featured.ts`) |
+| P-06 | Agentic RAG for IP / **Automated patent analysis pipeline** | Agentic RAG for IP / **Patent Q&A agent over USPTO XML** |
+| P-07 | **Neuromaker International Bioengineering Competition** / **International competition recognition** | **Neuromaker** / **Speech-to-ASL prosthetic hand** |
+| P-08 | Portfolio Website / **Live on AWS Amplify** | Portfolio Website / **This site: typed content, live diagrams** |
+
+Claims removed because the content files (written from the code) don't support them:
+
+- **BiasGPT**: "backed by an automated nightly pipeline that regenerates data, retrains, and redeploys the classifier". Now: a scheduled pipeline "generates new GPT-scored pairs and trains candidate models", and a candidate "is kept only if F1 holds". As the content file notes, `/reload_model` still loads the DistilBERT `.pt`, so the nightly winner isn't served.
+- **Agentic RAG**: "a vector database (AWS)", the vLLM tag, "high-relevance", "changing how intellectual property research is conducted". Now: Llama Stack agent with FAISS-backed vector_io, a Weaviate experiment, and 512-token chunks.
+- **Calico**: "featured in IEEE Spectrum and The Verge, and demonstrated at CHI and UbiComp" (from the old dialog text) isn't in the content file, so the showcase doesn't repeat it. The hero's result line still says "featured in IEEE Spectrum", which is unchanged and worth confirming. It is now described as a UMD Small Artifacts Lab team project.
+- **Neuromaker**: "translating spoken language into ASL gestures in real time" and "International competition recognition". Now: built stage by stage as prototypes, with no claim of a finished end-to-end translator.
+
+New stats (value / label):
+
+| Project | Stats |
+|---|---|
+| HarnessFlow | 9 / recoverable phases per run; 3× / repeat failures, then the run blocks; ~4.5 min / recorded acceptance run |
+| Claude Command Center | 0 / TCP ports; a Unix socket instead; 12 / packages, one typed monorepo; 28 / architecture decisions recorded |
+| Lane-Optimize | 20 / seeds per cell, final matrix; 0 / collisions, safety-weighted PPO; 290 → 0.31 / DQN loss after the Huber fix |
+| Calico | IMWUT / published in ACM IMWUT, 2022; 150 ms / IMU loop that keeps the screen image level |
+| BiasGPT | 1 call / returns the counterfactual and a verdict on it; F1 gate / a retrained candidate is kept only if F1 holds |
+| Agentic RAG for IP | 512 / token chunks with MiniLM embeddings; 2 / vector stores tried: FAISS and Weaviate |
+| Neuromaker | 3 / stages, each built and tested on its own; 15 ms / per degree of servo sweep for smooth fingers |
+| Portfolio Website | 8 / project pages from one typed content format; 1 / edge function for the whole backend |
+
+Tech chips are trimmed to the 4–6 headline technologies from each content file's tech stack. HarnessFlow, Claude Command Center, Lane-Optimize and BiasGPT also have small chip changes, for example vLLM removed and Gymnasium, Zod and launchd added.
