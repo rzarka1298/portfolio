@@ -140,7 +140,7 @@ export function ProjectPage({ project }: { project: ProjectPageData }) {
   }, [project.title]);
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+    <main id="main" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
       <Button variant="ghost" size="sm" asChild className="-ml-2 mb-6">
         <Link to="/#projects">
           <ArrowLeft className="w-4 h-4" />

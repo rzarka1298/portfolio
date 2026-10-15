@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import NotFound from './components/NotFound';
 import ScrollManager from './components/ScrollManager';
+import MotionProvider from './components/blueprint/MotionProvider';
+import CursorCrosshair from './components/blueprint/CursorCrosshair';
+import ScrollProgress from './components/blueprint/ScrollProgress';
 import { projectId, publicAnonKey } from './utils/supabase/info';
 import { Toaster } from 'sonner';
 
@@ -11,17 +14,10 @@ import { Toaster } from 'sonner';
 const ProjectPageRoute = lazy(() => import('./components/project/ProjectPage'));
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  // Theme (dark by default, saved choice respected) lives in lib/theme.ts
+  // and is applied before first paint by index.html.
   const location = useLocation();
   const isFirstVisit = useRef(true);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
 
   // Track a visit on first load and on every client-side route change.
   // document.referrer only describes the initial page load, so later
@@ -79,30 +75,30 @@ export default function App() {
     trackVisit();
   }, [location.pathname]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      <ScrollManager />
-      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+    <MotionProvider>
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+        <ScrollManager />
+        <Header />
+        <ScrollProgress />
+        <CursorCrosshair />
 
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route
-          path="/projects/:slug"
-          element={
-            <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>
-              <ProjectPageRoute />
-            </Suspense>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/projects/:slug"
+            element={
+              <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>
+                <ProjectPageRoute />
+              </Suspense>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
 
-      {/* Toast notifications */}
-      <Toaster position="top-right" />
-    </div>
+        {/* Toast notifications */}
+        <Toaster position="top-right" />
+      </div>
+    </MotionProvider>
   );
 }

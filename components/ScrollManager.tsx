@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { getLenis, scrollToId } from '../lib/motion/lenis';
 
 /**
  * Router scroll behaviour:
@@ -21,10 +22,8 @@ export default function ScrollManager() {
       let attempts = 0;
       let timer: number | undefined;
       const tryScroll = () => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: firstRender ? 'auto' : 'smooth' });
-        } else if (attempts++ < 20) {
+        if (scrollToId(id, { immediate: firstRender })) return;
+        if (attempts++ < 20) {
           timer = window.setTimeout(tryScroll, 50);
         }
       };
@@ -33,7 +32,9 @@ export default function ScrollManager() {
     }
 
     if (!firstRender) {
-      window.scrollTo(0, 0);
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(0, { immediate: true });
+      else window.scrollTo(0, 0);
     }
     return undefined;
   }, [pathname, hash]);
