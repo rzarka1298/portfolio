@@ -1,0 +1,292 @@
+import type { ProjectPage } from './types';
+
+const x: ProjectPage = {
+  slug: 'portfolio',
+  title: 'Portfolio Website',
+  tagline:
+    'This site: a React + TypeScript single-page app with data-driven project pages, interactive React Flow architecture diagrams, and a Supabase Edge Function for the contact form and visit analytics.',
+  status: 'Live on AWS Amplify',
+  summary: [
+    'The home page is a set of animated sections (hero, about, experience, skills, projects, contact) built with React, Tailwind and Framer Motion, with class-based dark mode.',
+    'Every in-depth project page, including this one, is plain data: a TypeScript `ProjectPage` object that describes the overview, highlights, tech stack and an architecture graph with nodes, groups, edges and step-by-step traces. One page component and one React Flow diagram component render all of them.',
+    'A single Supabase Edge Function handles the dynamic parts: it stores contact messages and visit counts in a key/value table and sends a notification email for each new message.',
+  ],
+  problem: [
+    'A project card can say what something is, but not how it works. Writing a custom page for each project would not scale, and static diagrams cannot show how a request actually moves through a system.',
+    'The aim was a content format strict enough to type-check and flexible enough to describe very different systems, from embedded robots to RL pipelines, plus a diagram that visitors can explore and play through step by step.',
+  ],
+  highlights: [
+    {
+      title: 'Content as typed data',
+      body: '`content/projects/types.ts` defines the contract: nodes with kind, position, summary, details, tech and an optional repository path; groups; labeled edges; and traces whose steps point at an edge or a node. A registry maps slug → page, and a project card shows its “Deep dive” button only if its slug is registered.',
+    },
+    {
+      title: 'Playable architecture traces',
+      body: 'A trace highlights one edge (or node) per step, dims everything else and animates a dot along the bezier path, in reverse for responses. Play, pause, step and reset controls advance every 2.4 s. Clicking a node opens a side panel with its details and a link to the code on GitHub.',
+    },
+    {
+      title: 'Layout rules that keep authoring simple',
+      body: 'Authors place 200×72 cards by their top-left x/y. Group backgrounds are computed from their members’ bounding box plus padding, and each edge attaches to the facing sides of its two nodes, so the graph stays readable without a layout engine. In development, missing node, edge or group references show up as console warnings.',
+    },
+    {
+      title: 'Bundle size and accessibility',
+      body: 'Project pages, and with them React Flow, are lazy-loaded behind the `/projects/:slug` route, so the home page does not pay for them. The diagram respects reduced-motion settings, follows dark mode, and on touch screens locks the canvas until “Explore” is tapped, so swiping still scrolls the page.',
+    },
+    {
+      title: 'One edge function for the backend',
+      body: 'A Deno Supabase Edge Function routes `/api/contact`, `/api/analytics/visit`, `/api/analytics/summary` and `/api/health`. Contacts and visits are stored as key/value rows. A visit also increments a per-day counter, and the summary adds up the last 30 days for the “portfolio views” stat. If the notification email fails, the saved message is kept.',
+    },
+  ],
+  techStack: [
+    { name: 'React 18 + TypeScript + Vite', role: 'SPA with react-router routes for / and /projects/:slug' },
+    { name: 'Tailwind CSS + Radix UI', role: 'Styling, design tokens, accessible primitives' },
+    { name: 'Framer Motion', role: 'Section and page animations' },
+    { name: '@xyflow/react (React Flow)', role: 'Architecture diagrams with custom nodes, groups and trace edges' },
+    { name: 'Supabase Edge Functions (Deno)', role: 'Contact form and visit-analytics API' },
+    { name: 'Supabase Postgres', role: '`portfolio_data` key/value table for contacts, visits and daily counts' },
+    { name: 'SMTP (denomailer)', role: 'Notification email for each new contact message' },
+    { name: 'AWS Amplify Hosting', role: 'Builds with `npm run build` and serves dist/ with an SPA rewrite to index.html' },
+  ],
+  architecture: {
+    groups: [
+      { id: 'hosting', label: 'Hosting' },
+      { id: 'spa', label: 'React SPA' },
+      { id: 'content', label: 'Project content & rendering' },
+      { id: 'backend', label: 'Supabase' },
+    ],
+    nodes: [
+      {
+        id: 'amplify',
+        label: 'AWS Amplify Hosting',
+        kind: 'external',
+        x: 0,
+        y: 0,
+        group: 'hosting',
+        summary: 'npm ci → npm run build → serve dist/.',
+        details:
+          'amplify.yml installs dependencies with a cached npm directory and runs `tsc && vite build`. A rewrite rule sends every path without a file extension to index.html, so deep links such as /projects/<slug> load the SPA.',
+        tech: ['AWS Amplify'],
+        codePath: 'amplify.yml',
+      },
+      {
+        id: 'app',
+        label: 'App shell + router',
+        kind: 'ui',
+        x: 0,
+        y: 160,
+        group: 'spa',
+        summary: 'Header, dark mode, routes, visit tracking.',
+        details:
+          'Toggles the `dark` class on the document root. Routes `/` to the home page and lazy-loads the project page for `/projects/:slug`, with a 404 fallback for anything else. On the first load and on every route change it posts the page path to the analytics endpoint. The referrer is reported as a coarse source (google, linkedin, github, …) on the first visit and as “internal” afterwards.',
+        tech: ['React', 'react-router-dom'],
+        codePath: 'App.tsx',
+      },
+      {
+        id: 'cards',
+        label: 'Projects section',
+        kind: 'ui',
+        x: 280,
+        y: 0,
+        group: 'spa',
+        summary: 'Filterable project cards; “Deep dive” when a page exists.',
+        details:
+          'Category filters are derived from the projects themselves, so no filter can show an empty grid. Each card links to GitHub or a demo, and links to its project page when `hasProjectPage(slug)` is true.',
+        tech: ['React', 'Framer Motion', 'Tailwind'],
+        codePath: 'components/Projects.tsx',
+      },
+      {
+        id: 'page',
+        label: 'Project page',
+        kind: 'ui',
+        x: 280,
+        y: 160,
+        group: 'spa',
+        summary: 'Renders any ProjectPage: overview → architecture → demo → stack → install → links.',
+        details:
+          'Looks up the slug in the registry and renders “Project not found” when there is no match. Sections appear only when their data is present. It passes the architecture and the GitHub URL to the diagram and lazy-loads a demo component if the page names one.',
+        tech: ['React', 'Framer Motion'],
+        codePath: 'components/project/ProjectPage.tsx',
+      },
+      {
+        id: 'contact',
+        label: 'Contact form',
+        kind: 'ui',
+        x: 280,
+        y: 400,
+        group: 'spa',
+        summary: 'Name, email, subject, message → edge function.',
+        details: 'Posts the form to `/api/contact` and shows a toast on success or failure.',
+        tech: ['React', 'sonner'],
+        codePath: 'components/Contact.tsx',
+      },
+      {
+        id: 'registry',
+        label: 'Project content registry',
+        kind: 'datastore',
+        x: 560,
+        y: 0,
+        group: 'content',
+        summary: 'Typed ProjectPage files keyed by slug.',
+        details:
+          'Each project is one TypeScript file that default-exports a ProjectPage. The registry imports them and builds a slug → page map with own-property lookups. Because the content type-checks at build time, broken fields fail the build instead of breaking the page.',
+        tech: ['TypeScript'],
+        codePath: 'content/projects/index.ts',
+      },
+      {
+        id: 'diagram',
+        label: 'ArchitectureDiagram',
+        kind: 'ui',
+        x: 560,
+        y: 160,
+        group: 'content',
+        summary: 'React Flow canvas: nodes, groups, edges, playable traces, side panel.',
+        details:
+          'Turns ArchNodes into custom card nodes, with an icon per kind, and computes group backgrounds from the bounding boxes of their members. Edges become custom bezier edges that can carry a travelling dot. Trace state (current trace, step, playing) drives which elements are active or dimmed. The view refits when the canvas resizes.',
+        tech: ['@xyflow/react', 'lucide-react', 'Framer Motion'],
+        codePath: 'components/project/ArchitectureDiagram.tsx',
+      },
+      {
+        id: 'demos',
+        label: 'Demo registry',
+        kind: 'service',
+        x: 560,
+        y: 320,
+        group: 'content',
+        summary: 'demoId → lazily loaded interactive demo.',
+        details:
+          'Maps IDs to `React.lazy` components (for example a recorded HarnessFlow run replay and a command-center mock). An unknown or missing demoId renders nothing.',
+        tech: ['React.lazy'],
+        codePath: 'components/project/demos/index.ts',
+      },
+      {
+        id: 'edgefn',
+        label: 'Supabase Edge Function',
+        kind: 'service',
+        x: 560,
+        y: 480,
+        group: 'backend',
+        summary: 'Deno handler for contact, visit and summary routes.',
+        details:
+          'Handles CORS preflight, checks that every contact field is present, and stores the message under `contact:<uuid>`. Visits are stored under `visit:<uuid>` (page, coarse referrer, timestamp, user agent), and `daily_visits:<date>` is incremented. The summary route adds up the last 30 daily counters.',
+        tech: ['Deno', 'supabase-js'],
+        codePath: 'supabase/functions/server/index.ts',
+      },
+      {
+        id: 'table',
+        label: 'portfolio_data (Postgres)',
+        kind: 'datastore',
+        x: 840,
+        y: 400,
+        group: 'backend',
+        summary: 'Key/value rows: contacts, visits, daily counters.',
+        details: 'One table with `key` and JSON `value` columns, written by upserts from the edge function using its service-role credentials.',
+        tech: ['Supabase Postgres'],
+      },
+      {
+        id: 'smtp',
+        label: 'SMTP mail',
+        kind: 'external',
+        x: 840,
+        y: 560,
+        group: 'backend',
+        summary: 'Notification email for each new contact message.',
+        details: 'Sent with denomailer using credentials from the function’s environment. A send failure is logged and the stored message is kept.',
+        tech: ['denomailer', 'SMTP'],
+      },
+    ],
+    edges: [
+      { id: 'e-amplify-app', source: 'amplify', target: 'app', label: 'dist/ + SPA rewrite' },
+      { id: 'e-app-cards', source: 'app', target: 'cards', label: 'route /' },
+      { id: 'e-app-page', source: 'app', target: 'page', label: 'lazy route /projects/:slug' },
+      { id: 'e-cards-registry', source: 'cards', target: 'registry', label: 'hasProjectPage(slug)' },
+      { id: 'e-page-registry', source: 'page', target: 'registry', label: 'getProjectPage(slug)' },
+      { id: 'e-page-diagram', source: 'page', target: 'diagram', label: 'architecture + GitHub URL' },
+      { id: 'e-page-demos', source: 'page', target: 'demos', label: 'getDemo(demoId)' },
+      { id: 'e-app-edgefn', source: 'app', target: 'edgefn', label: 'POST /api/analytics/visit' },
+      { id: 'e-contact-edgefn', source: 'contact', target: 'edgefn', label: 'POST /api/contact' },
+      { id: 'e-edgefn-table', source: 'edgefn', target: 'table', label: 'upsert key/value' },
+      { id: 'e-edgefn-smtp', source: 'edgefn', target: 'smtp', label: 'notify' },
+    ],
+    traces: [
+      {
+        id: 'deep-dive',
+        name: 'Opening a deep-dive page',
+        description: 'From clicking “Deep dive” on a card to playing a trace like this one.',
+        steps: [
+          {
+            edgeId: 'e-cards-registry',
+            title: 'Show the button',
+            caption: 'The card asks the registry whether its slug has a page. Only registered projects get a “Deep dive” link.',
+          },
+          {
+            edgeId: 'e-app-page',
+            title: 'Lazy-load the page',
+            caption: 'Navigating to /projects/<slug> loads the project-page chunk, which brings in React Flow only now.',
+          },
+          {
+            edgeId: 'e-page-registry',
+            title: 'Look up the content',
+            caption: 'The slug resolves to a typed ProjectPage. An unknown slug renders “Project not found”.',
+          },
+          {
+            edgeId: 'e-page-diagram',
+            title: 'Build the graph',
+            caption: 'Nodes, group backgrounds and side-aware edges are built from the content’s coordinates.',
+          },
+          {
+            nodeId: 'diagram',
+            title: 'Play a trace',
+            caption: 'Each step highlights its edge, dims the rest and sends a dot along the path. Clicking a node opens its details and code link.',
+          },
+          {
+            edgeId: 'e-app-edgefn',
+            title: 'Count the visit',
+            caption: 'The route change posts the new path to the analytics endpoint, with the referrer reported as “internal”.',
+          },
+        ],
+      },
+      {
+        id: 'contact',
+        name: 'Sending a message',
+        description: 'What happens when someone submits the contact form.',
+        steps: [
+          {
+            edgeId: 'e-contact-edgefn',
+            title: 'Submit the form',
+            caption: 'Name, email, subject and message are posted to the edge function. Missing fields return a 400.',
+          },
+          {
+            edgeId: 'e-edgefn-table',
+            title: 'Store it first',
+            caption: 'The message is saved as a contact:<uuid> row before anything else, so it is not lost.',
+          },
+          {
+            edgeId: 'e-edgefn-smtp',
+            title: 'Send a notification',
+            caption: 'A formatted notification email goes out over SMTP. If sending fails, the error is logged and the stored message is kept.',
+          },
+          {
+            edgeId: 'e-contact-edgefn',
+            reverse: true,
+            title: 'Confirm',
+            caption: 'The function returns success and the form shows a toast.',
+          },
+        ],
+      },
+    ],
+  },
+  install: {
+    intro: 'Node 20.',
+    steps: [
+      { label: 'Install', code: 'npm install' },
+      { label: 'Run locally', code: 'npm run dev' },
+      { label: 'Production build', code: 'npm run build' },
+    ],
+  },
+  links: {
+    github: 'https://github.com/rzarka1298/portfolio',
+    live: 'https://main.dv1zd1ccteche.amplifyapp.com/',
+  },
+};
+
+export default x;
