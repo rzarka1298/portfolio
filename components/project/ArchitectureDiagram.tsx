@@ -60,9 +60,10 @@ const STEP_MS = 2400;
 const TRAVEL_MS = 1400;
 const FIT_VIEW_OPTIONS = { padding: 0.15 };
 
-const EDGE_IDLE = '#94a3b8'; // slate-400 — readable on light and dark
-const EDGE_ACTIVE = '#0ea5e9'; // sky-500
-const DOT_COLOR = '#38bdf8'; // sky-400
+// Blueprint tokens (styles/globals.css); they follow the site theme.
+const EDGE_IDLE = 'hsl(var(--bp-line-soft))';
+const EDGE_ACTIVE = 'hsl(var(--bp-signal))';
+const DOT_COLOR = 'hsl(var(--bp-signal))';
 
 type ElementState = 'idle' | 'active' | 'dimmed';
 
@@ -73,49 +74,21 @@ interface KindStyle {
   iconBox: string;
 }
 
+// Blueprint: one ink family. Compute nodes carry the cyan line, stores
+// and queues the paper/ink tone, externals the soft line; the icon and the
+// side panel's kind label carry the rest.
+const ICON_LINE = 'border-bp-line/40 bg-bp-line/10 text-bp-line';
+const ICON_INK = 'border-bp-ink/30 bg-bp-ink/5 text-bp-ink';
+const ICON_SOFT = 'border-bp-line-soft/50 bg-transparent text-bp-line-soft';
+
 const KIND_STYLES: Record<NodeKind, KindStyle> = {
-  client: {
-    icon: Monitor,
-    label: 'Client',
-    accent: 'border-l-sky-500',
-    iconBox: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
-  },
-  ui: {
-    icon: LayoutDashboard,
-    label: 'UI',
-    accent: 'border-l-fuchsia-500',
-    iconBox: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300',
-  },
-  service: {
-    icon: Server,
-    label: 'Service',
-    accent: 'border-l-violet-500',
-    iconBox: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',
-  },
-  worker: {
-    icon: Cog,
-    label: 'Worker',
-    accent: 'border-l-amber-500',
-    iconBox: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
-  },
-  datastore: {
-    icon: Database,
-    label: 'Data store',
-    accent: 'border-l-emerald-500',
-    iconBox: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
-  },
-  queue: {
-    icon: Layers,
-    label: 'Queue',
-    accent: 'border-l-rose-500',
-    iconBox: 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
-  },
-  external: {
-    icon: Cloud,
-    label: 'External',
-    accent: 'border-l-slate-500',
-    iconBox: 'bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300',
-  },
+  client: { icon: Monitor, label: 'Client', accent: 'border-l-bp-line', iconBox: ICON_LINE },
+  ui: { icon: LayoutDashboard, label: 'UI', accent: 'border-l-bp-line', iconBox: ICON_LINE },
+  service: { icon: Server, label: 'Service', accent: 'border-l-bp-line', iconBox: ICON_LINE },
+  worker: { icon: Cog, label: 'Worker', accent: 'border-l-bp-line', iconBox: ICON_LINE },
+  datastore: { icon: Database, label: 'Data store', accent: 'border-l-bp-ink/70', iconBox: ICON_INK },
+  queue: { icon: Layers, label: 'Queue', accent: 'border-l-bp-ink/70', iconBox: ICON_INK },
+  external: { icon: Cloud, label: 'External', accent: 'border-l-bp-line-soft', iconBox: ICON_SOFT },
 };
 
 /* ------------------------------------------------------------------ */
@@ -165,12 +138,12 @@ const ArchNodeView = memo(function ArchNodeView({ data }: NodeProps<ArchFlowNode
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-lg border border-l-4 bg-card px-3 text-card-foreground shadow-sm transition-all duration-300',
-        'hover:shadow-md',
+        'relative flex items-center gap-3 border border-l-2 bg-bp-panel px-3 text-bp-ink transition-all duration-300',
+        'border-bp-line/45 hover:border-bp-line',
         style.accent,
         state === 'dimmed' && 'opacity-30',
-        state === 'active' && 'ring-2 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.55)]',
-        isSelected && state !== 'active' && 'ring-2 ring-primary',
+        state === 'active' && 'border-bp-signal shadow-[0_0_24px_hsl(var(--bp-signal)/0.35)]',
+        isSelected && state !== 'active' && 'ring-1 ring-bp-line ring-offset-2 ring-offset-bp-bg',
       )}
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
       title={`${node.label} — ${style.label}`}
@@ -181,12 +154,17 @@ const ArchNodeView = memo(function ArchNodeView({ data }: NodeProps<ArchFlowNode
           <Handle type="target" id={`${side}-t`} position={SIDE_POSITION[side]} isConnectable={false} style={hiddenHandle} />
         </React.Fragment>
       ))}
-      <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-md', style.iconBox)}>
+      <div
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center border',
+          state === 'active' ? 'border-bp-signal/60 bg-bp-signal/10 text-bp-signal' : style.iconBox,
+        )}
+      >
         <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-sm font-medium leading-tight">{node.label}</div>
-        <div className="truncate text-xs text-muted-foreground leading-tight mt-0.5">{node.summary}</div>
+        <div className="truncate font-display text-sm font-medium leading-tight">{node.label}</div>
+        <div className="mt-0.5 truncate text-xs leading-tight text-bp-ink-dim">{node.summary}</div>
       </div>
     </div>
   );
@@ -196,12 +174,12 @@ const GroupNodeView = memo(function GroupNodeView({ data, width, height }: NodeP
   return (
     <div
       className={cn(
-        'rounded-xl border border-dashed border-border bg-muted/40 transition-opacity duration-300',
+        'border border-dashed border-bp-line-soft/60 bg-bp-line/[0.03] transition-opacity duration-300',
         data.state === 'dimmed' && 'opacity-40',
       )}
       style={{ width, height }}
     >
-      <div className="px-3 pt-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bp-label px-3 pt-2 text-bp-line">
         {data.label}
       </div>
     </div>
@@ -268,9 +246,9 @@ const TraceEdgeView = memo(function TraceEdgeView({
         <EdgeLabelRenderer>
           <div
             className={cn(
-              'nodrag nopan pointer-events-none absolute rounded border bg-background/90 px-1.5 py-0.5 text-[10px] text-muted-foreground transition-opacity duration-300',
+              'nodrag nopan pointer-events-none absolute border border-bp-line-soft/50 bg-bp-bg/90 px-1.5 py-0.5 font-mono text-[10px] text-bp-ink-dim transition-opacity duration-300',
               state === 'dimmed' && 'opacity-30',
-              active && 'border-sky-400 text-foreground',
+              active && 'border-bp-signal text-bp-ink',
             )}
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
           >
@@ -367,11 +345,11 @@ function NodePanel({ node, githubUrl, isMobile, onClose }: NodePanelProps) {
   const body = (
     <>
       <div className="flex items-start gap-3 pr-8">
-        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-md', style.iconBox)}>
+        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center border', style.iconBox)}>
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">{style.label}</div>
+          <div className="bp-label text-bp-line">{style.label}</div>
           <h4 id="arch-panel-title" className="text-lg font-medium leading-tight">{node.label}</h4>
         </div>
       </div>
@@ -438,6 +416,7 @@ function NodePanel({ node, githubUrl, isMobile, onClose }: NodePanelProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="arch-panel-title"
+          data-lenis-prevent
           className="fixed inset-x-0 bottom-0 z-[61] max-h-[75vh] overflow-y-auto rounded-t-2xl border-t bg-background p-5 pb-8 shadow-2xl"
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
@@ -455,7 +434,8 @@ function NodePanel({ node, githubUrl, isMobile, onClose }: NodePanelProps) {
     <motion.aside
       role="dialog"
       aria-labelledby="arch-panel-title"
-      className="absolute inset-y-3 right-3 z-10 w-80 overflow-y-auto rounded-xl border bg-background/95 p-5 shadow-xl backdrop-blur"
+      data-lenis-prevent
+      className="absolute inset-y-3 right-3 z-10 w-80 overflow-y-auto border border-bp-line/40 bg-bp-panel/95 p-5 shadow-xl backdrop-blur"
       initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 24 }}
@@ -701,10 +681,12 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
 
       <div
         className={cn(
-          'arch-diagram relative h-[420px] overflow-hidden rounded-xl border bg-card md:h-[560px]',
+          'arch-diagram relative h-[420px] overflow-hidden border border-bp-line/40 bg-bp-bg md:h-[560px]',
           !canvasInteractive && 'arch-diagram--locked',
-          exploring && 'ring-2 ring-sky-400/60',
+          exploring && 'ring-2 ring-bp-signal/60',
         )}
+        // The canvas owns wheel and drag gestures; keep Lenis out of them.
+        data-lenis-prevent
       >
         <ReactFlow<FlowNode, TraceFlowEdge>
           nodes={nodes}
@@ -733,7 +715,7 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
           // Let the card background (site theme tokens) show through in both modes.
           style={{ background: 'transparent', '--xy-background-color': 'transparent' } as React.CSSProperties}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={isDark ? '#334155' : '#cbd5e1'} />
+          <Background variant={BackgroundVariant.Lines} gap={24} lineWidth={1} color="hsl(var(--bp-grid) / 0.8)" />
           <Controls showInteractive={false} position="bottom-left" />
           <FitOnResize />
         </ReactFlow>
@@ -764,7 +746,7 @@ export default function ArchitectureDiagram({ architecture, githubUrl, className
       </AnimatePresence>
 
       {trace && (
-        <div className="min-h-[4.5rem] rounded-lg border bg-muted/40 px-4 py-3" aria-live="polite">
+        <div className="min-h-[4.5rem] border border-bp-line-soft/40 bg-bp-panel/60 px-4 py-3" aria-live="polite">
           {step ? (
             <>
               <div className="text-xs uppercase tracking-wider text-muted-foreground">
