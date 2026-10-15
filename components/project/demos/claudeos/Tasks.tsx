@@ -77,7 +77,7 @@ export function TasksView({
       </div>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem]">
         {shown.length === 0 ? (
-          <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+          <p className="border border-dashed p-3 text-xs text-muted-foreground">
             No tasks under {FILTER_LABEL[filter]}.
           </p>
         ) : (
@@ -89,7 +89,7 @@ export function TasksView({
                   aria-pressed={selected === t.id}
                   onClick={() => setSelected(t.id)}
                   className={cn(
-                    'flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-lg border p-2.5 text-left text-xs',
+                    'flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-0.5 border p-2.5 text-left text-xs',
                     FOCUS,
                     selected === t.id ? 'bg-muted' : 'hover:bg-muted/50',
                   )}
@@ -107,7 +107,7 @@ export function TasksView({
             ))}
           </ul>
         )}
-        <aside aria-label="Task detail" className="min-w-0 rounded-xl border bg-card/80 p-4 text-xs">
+        <aside aria-label="Task detail" className="min-w-0 border bg-card/80 p-4 text-xs">
           {!sel ? (
             <p className="text-muted-foreground">Select a task to see its detail.</p>
           ) : (

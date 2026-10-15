@@ -114,7 +114,7 @@ export function ApprovalsView({
           ))}
         </div>
         {shown.length === 0 ? (
-          <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">No {filter} requests.</p>
+          <p className="border border-dashed p-3 text-xs text-muted-foreground">No {filter} requests.</p>
         ) : (
           <ul className="space-y-1.5" aria-label={`${filter} requests`}>
             {shown.map((a) => (
@@ -124,7 +124,7 @@ export function ApprovalsView({
                   aria-pressed={a.proposalId === selected}
                   onClick={() => onSelect(a.proposalId)}
                   className={cn(
-                    'w-full rounded-lg border p-2.5 text-left text-xs transition-colors',
+                    'w-full border p-2.5 text-left text-xs transition-colors',
                     FOCUS,
                     a.proposalId === selected ? 'bg-muted' : 'hover:bg-muted/50',
                   )}
@@ -143,7 +143,7 @@ export function ApprovalsView({
         )}
       </div>
 
-      <section aria-label="Request detail" className="min-w-0 rounded-xl border bg-card/80 p-4 text-sm">
+      <section aria-label="Request detail" className="min-w-0 border bg-card/80 p-4 text-sm">
         {!sel ? (
           <p className="text-muted-foreground">Select a request to see what it would do.</p>
         ) : (
@@ -200,7 +200,7 @@ export function ApprovalsView({
 
             {/* Payload hash check */}
             {sel.blocks && (
-              <div className="rounded-lg border bg-muted/40 p-3 text-xs">
+              <div className="border bg-muted/40 p-3 text-xs">
                 <p className="mb-1.5 font-semibold">Payload check</p>
                 <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 font-mono">
                   <span className="font-sans text-muted-foreground">You reviewed</span>
@@ -244,12 +244,12 @@ export function ApprovalsView({
                 <div className="flex flex-wrap gap-x-3 gap-y-1 border-t pt-2 text-xs">
                   <span className="text-muted-foreground">Try it:</span>
                   {sel.blocks && (
-                    <button type="button" disabled={!live} onClick={() => tamper(sel.proposalId)} className={cn('rounded underline underline-offset-2 disabled:opacity-50', FOCUS)}>
+                    <button type="button" disabled={!live} onClick={() => tamper(sel.proposalId)} className={cn('underline underline-offset-2 disabled:opacity-50', FOCUS)}>
                       Simulate the requester editing it
                     </button>
                   )}
                   {sel.expiresAt !== null && (
-                    <button type="button" onClick={() => skipTo((sel.expiresAt ?? now) + 1000)} className={cn('rounded underline underline-offset-2', FOCUS)}>
+                    <button type="button" onClick={() => skipTo((sel.expiresAt ?? now) + 1000)} className={cn('underline underline-offset-2', FOCUS)}>
                       Skip ahead to expiry
                     </button>
                   )}
@@ -260,7 +260,7 @@ export function ApprovalsView({
                         setReviewed({ id: sel.proposalId, payload: approvalPayload(sel) });
                         setOutcome({ kind: 'none' });
                       }}
-                      className={cn('rounded underline underline-offset-2', FOCUS)}
+                      className={cn('underline underline-offset-2', FOCUS)}
                     >
                       Review it again
                     </button>
@@ -322,12 +322,12 @@ function Outcome({ outcome }: { outcome: Outcome }) {
     <div aria-live="polite" className="text-xs">
       {outcome.kind === 'checking' && <p className="text-muted-foreground">Checking the payload hash with the service…</p>}
       {outcome.kind === 'changed' && (
-        <p className={cn('rounded-md border border-current/30 p-2', DANGER_TEXT)}>
+        <p className={cn('border border-current/30 p-2', DANGER_TEXT)}>
           This request changed after you opened it. Nothing was carried out — review it again before deciding.
         </p>
       )}
       {outcome.kind === 'used' && (
-        <p className="rounded-md border p-2 text-muted-foreground">
+        <p className="border p-2 text-muted-foreground">
           Refused by the service: this request was already decided. An approval is used once; raise a new request
           instead.
         </p>

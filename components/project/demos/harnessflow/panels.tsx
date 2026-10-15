@@ -43,7 +43,7 @@ function Placeholder({ children }: { children: ReactNode }) {
 
 function Running({ label }: { label: string }) {
   return (
-    <p className="flex items-center gap-2 text-sm text-sky-700 dark:text-sky-300" role="status">
+    <p className="flex items-center gap-2 text-sm text-bp-signal-ink" role="status">
       <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />
       {label}
     </p>
@@ -58,7 +58,7 @@ export function RunHeader({ s }: { s: ReplayState }) {
     <header className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-1.5 text-[10px] font-bold tracking-[0.16em] text-teal-700 dark:text-teal-300">
+          <div className="mb-1.5 text-[10px] font-bold tracking-[0.16em] text-bp-line">
             PROJECT RUN
           </div>
           <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">{replay.project.name}</h3>
@@ -78,9 +78,9 @@ export function RunHeader({ s }: { s: ReplayState }) {
               key={p}
               aria-current={current ? 'step' : undefined}
               className={cn(
-                'rounded-full border px-2.5 py-0.5 text-[11px] capitalize transition-colors',
+                'border px-2.5 py-0.5 text-[11px] capitalize transition-colors',
                 current
-                  ? 'border-teal-500 bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-200'
+                  ? 'border-bp-line bg-bp-line/10 text-bp-line'
                   : done
                     ? 'border-border text-foreground'
                     : 'border-border text-muted-foreground',
@@ -102,7 +102,7 @@ export function RunHeader({ s }: { s: ReplayState }) {
                 {i > 0 ? <ChevronRight className="h-3 w-3" aria-hidden /> : null}
                 <span
                   className={cn(
-                    'rounded px-1.5 py-px',
+                    'px-1.5 py-px',
                     v.outcome === 'rejected' && 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
                     v.outcome === 'passed' && 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
                     v.phase === 'repair' && 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
@@ -129,7 +129,7 @@ export function RepairNote({ s }: { s: ReplayState }) {
         <motion.div
           {...fade}
           role="note"
-          className="flex gap-2.5 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200"
+          className="flex gap-2.5 border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200"
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>
@@ -220,10 +220,10 @@ export function WorkspacePanel({ s, onInspect }: { s: ReplayState; onInspect: In
                 <button
                   type="button"
                   onClick={() => onInspect({ title: 'Checkpoint frame', data: frames[c.frameIndex], frameIndex: c.frameIndex })}
-                  className={cn('flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 rounded text-left hover:bg-muted/60', focusRing)}
+                  className={cn('flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 text-left hover:bg-muted/60', focusRing)}
                 >
                   {c.sha ? (
-                    <span className="font-mono text-teal-700 dark:text-teal-300">{shortSha(c.sha, 7)}</span>
+                    <span className="font-mono text-bp-line">{shortSha(c.sha, 7)}</span>
                   ) : (
                     <Unavailable>sha n/a</Unavailable>
                   )}
@@ -236,7 +236,7 @@ export function WorkspacePanel({ s, onInspect }: { s: ReplayState; onInspect: In
       ) : null}
       {s.completed ? (
         <details className="mt-3 text-xs">
-          <summary className={cn('cursor-pointer rounded font-medium', focusRing)}>Delivery summary</summary>
+          <summary className={cn('cursor-pointer font-medium', focusRing)}>Delivery summary</summary>
           <p className="mt-2 whitespace-pre-wrap break-words leading-relaxed">{fs.summary}</p>
         </details>
       ) : null}
@@ -285,13 +285,13 @@ export function PlanPanel({ s }: { s: ReplayState }) {
           const done = s.completedTasks.has(task.id);
           const active = s.activeTask === task.id;
           return (
-            <li key={task.id} className="rounded-lg border p-3">
+            <li key={task.id} className="border p-3">
               <div className="flex items-start gap-2">
                 <span className="mt-0.5" aria-hidden>
                   {done ? (
-                    <Check className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                    <Check className="h-4 w-4 text-bp-line" />
                   ) : active ? (
-                    <Loader2 className="h-4 w-4 text-sky-600 motion-safe:animate-spin dark:text-sky-400" />
+                    <Loader2 className="h-4 w-4 text-bp-signal-ink motion-safe:animate-spin" />
                   ) : (
                     <Circle className="h-4 w-4 text-muted-foreground" />
                   )}
@@ -307,7 +307,7 @@ export function PlanPanel({ s }: { s: ReplayState }) {
                     {task.depends_on.length ? ` · after ${task.depends_on.join(', ')}` : ''}
                   </p>
                   <details className="mt-1.5 text-xs">
-                    <summary className={cn('cursor-pointer rounded text-muted-foreground', focusRing)}>Instructions</summary>
+                    <summary className={cn('cursor-pointer text-muted-foreground', focusRing)}>Instructions</summary>
                     <p className="mt-1.5 leading-relaxed">{task.instructions}</p>
                   </details>
                 </div>
@@ -317,7 +317,7 @@ export function PlanPanel({ s }: { s: ReplayState }) {
         })}
       </ol>
       <details className="mt-3 text-xs">
-        <summary className={cn('cursor-pointer rounded font-medium', focusRing)}>
+        <summary className={cn('cursor-pointer font-medium', focusRing)}>
           Planning assumptions ({plan.assumptions.length})
         </summary>
         <ul className="mt-2 list-disc space-y-1.5 pl-5 leading-relaxed">
@@ -356,7 +356,7 @@ export function CriteriaPanel({ s }: { s: ReplayState }) {
                     <span
                       key={c.id}
                       className={cn(
-                        'rounded px-1.5 font-mono',
+                        'px-1.5 font-mono',
                         st
                           ? st.passed
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
@@ -397,7 +397,7 @@ export function ActivityPanel({ s, onInspect }: { s: ReplayState; onInspect: Ins
                   type="button"
                   onClick={() => onInspect({ title: 'Event frame', data: frames[e.frameIndex], frameIndex: e.frameIndex })}
                   className={cn(
-                    'block w-full rounded-r border-l-2 border-teal-200 py-0.5 pl-3 text-left hover:bg-muted/60 dark:border-teal-900',
+                    'block w-full border-l-2 border-bp-line/40 py-0.5 pl-3 text-left hover:bg-muted/60',
                     focusRing,
                   )}
                 >
@@ -431,10 +431,10 @@ export function AttemptsPanel({ s, clock, onInspect }: { s: ReplayState; clock: 
       right={
         <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
           <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-3 rounded-sm bg-sky-500/70" aria-hidden /> read-only
+            <span className="h-2 w-3 bg-bp-line-soft" aria-hidden /> read-only
           </span>
           <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-3 rounded-sm bg-teal-500" aria-hidden /> workspace-write
+            <span className="h-2 w-3 bg-bp-line/100" aria-hidden /> workspace-write
           </span>
         </div>
       }
@@ -451,16 +451,16 @@ export function AttemptsPanel({ s, clock, onInspect }: { s: ReplayState; clock: 
                   <button
                     type="button"
                     onClick={() => onInspect({ title: `Attempt · ${attemptName(a)}`, data: a })}
-                    className={cn('grid w-full grid-cols-[5.5rem_1fr] items-center gap-2 rounded text-left hover:bg-muted/60 sm:grid-cols-[7rem_1fr_5rem]', focusRing)}
+                    className={cn('grid w-full grid-cols-[5.5rem_1fr] items-center gap-2 text-left hover:bg-muted/60 sm:grid-cols-[7rem_1fr_5rem]', focusRing)}
                     aria-label={`${attemptName(a)}, ${ended ? 'completed' : 'running'}, t+${a.started_t}s${ended ? ` to t+${a.ended_t}s, ${(a.tokens.input + a.tokens.output).toLocaleString('en-US')} tokens` : ''}`}
                   >
                     <span className="truncate text-xs capitalize">
                       {!ended ? <Loader2 className="mr-1 inline h-3 w-3 motion-safe:animate-spin" aria-hidden /> : null}
                       {attemptName(a)}
                     </span>
-                    <span className="relative h-4 rounded bg-muted/60" aria-hidden>
+                    <span className="relative h-4 bg-muted/60" aria-hidden>
                       <span
-                        className={cn('absolute inset-y-0 rounded', write ? 'bg-teal-500' : 'bg-sky-500/70')}
+                        className={cn('absolute inset-y-0 ', write ? 'bg-bp-line/100' : 'bg-bp-line-soft')}
                         style={{ left: pct(a.started_t), width: `max(3px, calc(${pct(end)} - ${pct(a.started_t)}))` }}
                       />
                       <span className="absolute inset-y-[-2px] w-px bg-foreground/50" style={{ left: pct(clock) }} />
@@ -505,7 +505,7 @@ export function EvidencePanel({ s, onInspect }: { s: ReplayState; onInspect: Ins
       {history.length ? (
         <ul className="mb-3 flex flex-wrap gap-1.5 text-[11px]">
           {history.map((p) => (
-            <li key={p.pass} className="rounded-full border px-2 py-0.5">
+            <li key={p.pass} className="border px-2 py-0.5">
               Pass {p.pass}: {p.evidence.filter((e) => e.passed).length}/{p.evidence.length} passed ·{' '}
               {p.commit ? <span className="font-mono">{shortSha(p.commit, 7)}</span> : <span className="italic text-muted-foreground">commit not retained</span>}
             </li>
@@ -537,8 +537,8 @@ function CheckRow({ check, s, verifying, onInspect }: { check: PlanCheck; s: Rep
   const st = s.checks.get(check.id);
   const ev = st ? replay.verification_passes.find((p) => p.pass === st.pass)?.evidence.find((e) => e.check_id === check.id) : undefined;
   return (
-    <details className="group rounded-lg border p-3">
-      <summary className={cn('flex cursor-pointer list-none items-center justify-between gap-2 rounded text-sm', focusRing)}>
+    <details className="group border p-3">
+      <summary className={cn('flex cursor-pointer list-none items-center justify-between gap-2 text-sm', focusRing)}>
         <span className="flex min-w-0 items-center gap-1.5">
           <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform group-open:rotate-90" aria-hidden />
           <span className="font-mono text-xs">{check.id}</span>
@@ -559,7 +559,7 @@ function CheckRow({ check, s, verifying, onInspect }: { check: PlanCheck; s: Rep
             <button
               type="button"
               onClick={() => onInspect({ title: `Evidence · ${check.id} (pass ${st?.pass})`, data: ev, frameIndex: st?.frameIndex })}
-              className={cn('ml-auto rounded px-1 font-sans text-teal-700 underline underline-offset-2 dark:text-teal-300', focusRing)}
+              className={cn('ml-auto px-1 font-sans text-bp-line underline underline-offset-2', focusRing)}
             >
               raw
             </button>
@@ -594,7 +594,7 @@ export function ReviewPanel({ s, onInspect }: { s: ReplayState; onInspect: Inspe
                   type="button"
                   onClick={() => onInspect({ title: `Review #${i + 1}`, data: { frame: frames[r.frameIndex], record: replay.reviews[i] }, frameIndex: r.frameIndex })}
                   className={cn(
-                    'w-full rounded-lg border p-3 text-left hover:bg-muted/60',
+                    'w-full border p-3 text-left hover:bg-muted/60',
                     !r.passed && 'border-red-300 dark:border-red-900',
                     focusRing,
                   )}
@@ -656,7 +656,7 @@ export function JudgePanel({ s }: { s: ReplayState }) {
           <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <AnimatePresence>
               {j.requirement_verdicts.map((v, i) => (
-                <motion.li key={v.requirement_id} {...fade} transition={{ duration: 0.25, delay: i * 0.06 }} className="rounded-lg border p-3">
+                <motion.li key={v.requirement_id} {...fade} transition={{ duration: 0.25, delay: i * 0.06 }} className="border p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs">{v.requirement_id}</span>
                     <StatusBadge status={v.passed ? 'completed' : 'failed'} label={v.passed ? 'passed' : 'failed'} />
@@ -699,8 +699,8 @@ export function ArtifactsPanel({ s }: { s: ReplayState }) {
           {replay.final_snapshot.artifacts
             .filter((a) => s.artifacts?.includes(a.name))
             .map((a) => (
-              <details key={a.name} className="rounded-lg border p-3">
-                <summary className={cn('flex cursor-pointer flex-wrap items-center justify-between gap-2 rounded text-sm font-medium', focusRing)}>
+              <details key={a.name} className="border p-3">
+                <summary className={cn('flex cursor-pointer flex-wrap items-center justify-between gap-2 text-sm font-medium', focusRing)}>
                   <span className="break-all">{a.name}</span>
                   {NOT_RETAINED.has(a.name) ? <Unavailable>content not retained</Unavailable> : (
                     <span className="font-mono text-[10px] font-normal text-muted-foreground">{a.media_type}</span>
@@ -739,7 +739,7 @@ export function ArtifactsPanel({ s }: { s: ReplayState }) {
           <h4 className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Files · {shortSha(d.base_commit, 7)}..{shortSha(d.head_commit, 7)}
           </h4>
-          <ul className="mt-1.5 divide-y rounded-lg border text-xs">
+          <ul className="mt-1.5 divide-y border text-xs">
             {d.files.map((f) => (
               <li key={f.path} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-3 py-1.5">
                 <span className="break-all font-mono">{f.path}</span>
@@ -773,7 +773,7 @@ export function FrameLog({ s, onInspect }: { s: ReplayState; onInspect: Inspect 
       title={`Replay frames · ${s.index + 1} / ${frames.length}`}
       hint="Every recorded frame. Select one to see its raw JSON and seek the replay there."
     >
-      <ol ref={ref} className="relative max-h-64 overflow-y-auto rounded-lg border text-[11px]">
+      <ol ref={ref} className="relative max-h-64 overflow-y-auto border text-[11px]">
         {frames.map((f, i) => (
           <li key={i}>
             <button
@@ -783,7 +783,7 @@ export function FrameLog({ s, onInspect }: { s: ReplayState; onInspect: Inspect 
               className={cn(
                 'grid w-full grid-cols-[2.5rem_6.5rem_1fr] gap-2 px-2 py-1 text-left hover:bg-muted/60',
                 i > s.index && 'opacity-45',
-                i === s.index && 'bg-teal-50 dark:bg-teal-950/60',
+                i === s.index && 'bg-bp-line/10',
                 focusRing,
               )}
             >

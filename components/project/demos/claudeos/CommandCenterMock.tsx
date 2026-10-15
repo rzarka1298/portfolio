@@ -122,19 +122,19 @@ export default function CommandCenterMock({ project }: DemoProps) {
     <MotionConfig reducedMotion="user">
       <div className="min-w-0 space-y-3" aria-label={`${project.title} interactive mock`} role="region">
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span className={cn('rounded-full border px-2 py-0.5 text-xs font-semibold', ACCENT_TEXT)}>Mock</span>
+          <span className={cn('border px-2 py-0.5 text-xs font-semibold', ACCENT_TEXT)}>Mock</span>
           Interactive mock with sample data — the real app runs locally in Obsidian.
         </p>
 
         <Controls cc={cc} cardState={cardState} setCardState={setCardState} />
 
-        <div ref={frameRef} className="relative min-w-0 overflow-hidden rounded-xl border bg-background shadow-lg">
+        <div ref={frameRef} className="relative min-w-0 overflow-hidden border border-bp-line/50 bg-background">
           {/* Window chrome */}
           <div className="flex items-center gap-2 border-b bg-muted/60 px-3 py-2">
             <span aria-hidden className="flex gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              <span className="h-2 w-2 border border-bp-line-soft" />
+              <span className="h-2 w-2 border border-bp-line-soft" />
+              <span className="h-2 w-2 bg-bp-signal" />
             </span>
             <span className="min-w-0 truncate text-xs text-muted-foreground">demo-vault — Obsidian</span>
           </div>
@@ -183,7 +183,7 @@ export default function CommandCenterMock({ project }: DemoProps) {
                   id={`ccc-panel-${tab}`}
                   aria-labelledby={`ccc-tab-${tab}`}
                   tabIndex={0}
-                  className={cn('order-1 min-w-0 rounded-lg lg:order-2', FOCUS)}
+                  className={cn('order-1 min-w-0 lg:order-2', FOCUS)}
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
@@ -285,7 +285,7 @@ function Controls({
   setCardState: (s: CardStateOverride) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-x-4 gap-y-2 rounded-lg border bg-card p-2.5 text-xs">
+    <div className="flex flex-wrap items-end gap-x-4 gap-y-2 border bg-card p-2.5 text-xs">
       <Btn onClick={cc.playTimeline} disabled={cc.timeline === 'playing'}>
         <Play aria-hidden className="h-3.5 w-3.5" />
         {cc.timeline === 'playing' ? 'Timeline playing…' : cc.timeline === 'done' ? 'Play timeline again' : 'Play timeline'}
@@ -309,7 +309,7 @@ function Controls({
               value={m}
               checked={cc.reconnectMode === m}
               onChange={() => cc.setReconnectMode(m)}
-              className="accent-[#c2185b]"
+              className="accent-[hsl(var(--bp-signal))]"
             />
             {label}
           </label>
@@ -323,7 +323,7 @@ function Controls({
             const next = CARD_STATES.find((c) => c.id === e.target.value);
             if (next) setCardState(next.id);
           }}
-          className={cn('rounded-md border bg-background px-1.5 py-1', FOCUS)}
+          className={cn('border bg-background px-1.5 py-1', FOCUS)}
         >
           {CARD_STATES.map((c) => (
             <option key={c.id} value={c.id}>
@@ -389,20 +389,20 @@ function Tabs({
               '-mb-px inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-2 text-xs transition-colors',
               FOCUS,
               selected
-                ? cn('border-[#c2185b] font-semibold text-foreground dark:border-[#ff5fa2]')
+                ? cn('border-bp-signal font-semibold text-foreground')
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >
             <Icon aria-hidden className="h-3.5 w-3.5" />
             {d.label}
             {d.id === 'agent-runs' && pending > 0 && (
-              <span className="rounded-full bg-[#c2185b] px-1.5 text-[0.65rem] font-semibold leading-4 text-white dark:bg-[#ff5fa2] dark:text-[#0b0b0f]">
+              <span className="bg-bp-signal px-1.5 text-[0.65rem] font-semibold leading-4 text-[#0B2341]">
                 {pending}
                 <span className="sr-only"> pending requests</span>
               </span>
             )}
             {stub && (
-              <span className="rounded border px-1 text-[0.6rem] uppercase tracking-wide text-muted-foreground">
+              <span className="border px-1 text-[0.6rem] uppercase tracking-wide text-muted-foreground">
                 {d.id === 'knowledge' ? 'Preview' : 'Soon'}
               </span>
             )}
@@ -475,7 +475,7 @@ function ConnectionPill({ cc }: { cc: CommandCenter }) {
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'flex max-w-full items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-left text-xs',
+          'flex max-w-full items-center gap-1.5 border bg-card px-2.5 py-1 text-left text-xs',
           FOCUS,
         )}
       >
@@ -500,13 +500,13 @@ function ConnectionPill({ cc }: { cc: CommandCenter }) {
           role="menu"
           aria-label="Connection tests"
           onKeyDown={onMenuKey}
-          className="absolute right-0 z-20 mt-1 w-60 max-w-[calc(100vw-3rem)] rounded-lg border bg-popover p-1 text-xs shadow-lg"
+          className="absolute right-0 z-20 mt-1 w-60 max-w-[calc(100vw-3rem)] border bg-popover p-1 text-xs shadow-lg"
         >
-          <button type="button" role="menuitem" disabled={!cc.live} onClick={() => pick('replay')} className={cn('block w-full rounded px-2 py-1.5 text-left hover:bg-muted disabled:opacity-50', FOCUS)}>
+          <button type="button" role="menuitem" disabled={!cc.live} onClick={() => pick('replay')} className={cn('block w-full px-2 py-1.5 text-left hover:bg-muted disabled:opacity-50', FOCUS)}>
             Simulate disconnect
             <span className="block text-muted-foreground">Reconnect with Last-Event-ID and replay what was missed</span>
           </button>
-          <button type="button" role="menuitem" disabled={!cc.live} onClick={() => pick('resync')} className={cn('block w-full rounded px-2 py-1.5 text-left hover:bg-muted disabled:opacity-50', FOCUS)}>
+          <button type="button" role="menuitem" disabled={!cc.live} onClick={() => pick('resync')} className={cn('block w-full px-2 py-1.5 text-left hover:bg-muted disabled:opacity-50', FOCUS)}>
             Simulate restart
             <span className="block text-muted-foreground">The service lost its log: stream.resync, then a snapshot</span>
           </button>
@@ -529,7 +529,7 @@ function ComingSoon({
 }) {
   const Icon = TAB_ICON[id];
   return (
-    <div className="flex min-h-[14rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-center">
+    <div className="flex min-h-[14rem] flex-col items-center justify-center gap-2 border border-dashed p-6 text-center">
       <Icon aria-hidden className="h-6 w-6 text-muted-foreground" />
       <p className="font-semibold">{label}</p>
       <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
@@ -555,7 +555,7 @@ function Toasts({ cc }: { cc: CommandCenter }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             className={cn(
-              'pointer-events-auto flex items-start gap-2 rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg',
+              'pointer-events-auto flex items-start gap-2 border bg-popover px-3 py-2 text-xs shadow-lg',
               t.tone === 'success' && 'border-emerald-600/40',
               t.tone === 'warning' && 'border-amber-600/40',
             )}
@@ -565,7 +565,7 @@ function Toasts({ cc }: { cc: CommandCenter }) {
               type="button"
               aria-label="Dismiss"
               onClick={() => cc.dismissToast(t.id)}
-              className={cn('rounded text-muted-foreground hover:text-foreground', FOCUS)}
+              className={cn('text-muted-foreground hover:text-foreground', FOCUS)}
             >
               <X aria-hidden className="h-3.5 w-3.5" />
             </button>
@@ -585,8 +585,8 @@ const TONE_LABEL: Record<LogEntry['tone'], string> = {
 
 function EventLog({ log, cursor }: { log: LogEntry[]; cursor: number }) {
   return (
-    <details className="group rounded-lg border bg-card text-xs" open>
-      <summary className={cn('cursor-pointer select-none rounded-lg px-3 py-2 font-medium', FOCUS)}>
+    <details className="group border bg-card text-xs" open>
+      <summary className={cn('cursor-pointer select-none px-3 py-2 font-medium', FOCUS)}>
         Under the hood: the event stream{' '}
         <span className="font-normal text-muted-foreground">
           · client Last-Event-ID <span className="font-mono">{cursor}</span>

@@ -62,7 +62,7 @@ export function Rail({
         freshness="unavailable"
         permission={{ source: PERMISSION_CARDS.today.source, onConnect: common.onConnectPreview }}
       />
-      <section aria-label="Quick actions" className="rounded-xl border bg-card/80 p-4">
+      <section aria-label="Quick actions" className="border bg-card/80 p-4">
         <h3 className="mb-2 text-sm font-semibold">Quick actions</h3>
         <ul className="flex flex-col gap-1.5">
           {QUICK_ACTIONS.map((a) => (
@@ -107,7 +107,7 @@ function Hero({
     <section
       aria-label="Active Claude sessions"
       className={cn(
-        'relative flex min-w-0 flex-col gap-2 rounded-xl border border-[#0b0b0f]/10 bg-[#f4efe6] p-4 text-[#0b0b0f] shadow-sm transition-[opacity,transform] sm:col-span-2',
+        'relative flex min-w-0 flex-col gap-2 border border-bp-line/50 bg-bp-panel-2 p-4 text-bp-ink transition-[opacity,transform] sm:col-span-2',
         showData && 'hover:-translate-y-0.5 motion-reduce:hover:translate-y-0',
         disconnected && 'opacity-[0.85]',
       )}
@@ -128,33 +128,33 @@ function Hero({
                 {value}
               </motion.span>
             </AnimatePresence>
-            {starting > 0 && <span className="pb-1 text-xs text-[#5a5650]">+{starting} starting</span>}
+            {starting > 0 && <span className="pb-1 text-xs text-bp-ink-dim">+{starting} starting</span>}
           </div>
-          <p className="text-xs text-[#5a5650]">
+          <p className="text-xs text-bp-ink-dim">
             {waiting} waiting for approval · {stale} unknown
           </p>
-          <div aria-hidden className="h-0.5 w-full overflow-hidden rounded-full bg-[#0b0b0f]/10">
-            <div className="h-full bg-[#c2185b] transition-[width] duration-500" style={{ width: `${meter}%` }} />
+          <div aria-hidden className="h-0.5 w-full overflow-hidden rounded-full bg-bp-line-soft/30">
+            <div className="h-full bg-bp-signal transition-[width] duration-500" style={{ width: `${meter}%` }} />
           </div>
           <button
             type="button"
             onClick={onOpen}
-            className="self-start rounded text-xs font-medium underline underline-offset-2 after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#c2185b]"
+            className="self-start text-xs font-medium underline underline-offset-2 after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-bp-signal"
           >
             Open Agent runs
           </button>
         </div>
       ) : override === 'empty' ? (
-        <p className="text-sm text-[#5a5650]">No Claude sessions are running.</p>
+        <p className="text-sm text-bp-ink-dim">No Claude sessions are running.</p>
       ) : override === 'permission-required' ? (
         <div className="space-y-2 text-sm">
-          <p className="text-[#5a5650]">Claude Code hooks aren't connected</p>
-          <button type="button" onClick={onConnectPreview} className="rounded-md border border-[#0b0b0f]/30 px-2.5 py-1 text-xs font-medium hover:bg-[#0b0b0f]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2185b]">
+          <p className="text-bp-ink-dim">Claude Code hooks aren't connected</p>
+          <button type="button" onClick={onConnectPreview} className="border border-bp-line-soft/60 px-2.5 py-1 text-xs font-medium hover:bg-bp-line/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bp-signal">
             Connect
           </button>
         </div>
       ) : (
-        <p className="text-sm text-[#a5134c]">Couldn't load active sessions</p>
+        <p className="text-sm text-bp-signal-ink">Couldn't load active sessions</p>
       )}
       <FreshnessFooter tone="cream" freshness={freshness} source="Claude Code hooks" />
     </section>
@@ -203,7 +203,7 @@ export function OverviewCanvas({
           <Meter label="This week" value={CLAUDE_USAGE.weeklyPercent} />
           <div aria-hidden className="flex h-8 items-end gap-0.5">
             {CLAUDE_USAGE.halfHourly.map((v, i) => (
-              <span key={i} className="flex-1 rounded-sm bg-muted-foreground/40" style={{ height: `${Math.max(4, (v / maxBar) * 100)}%` }} />
+              <span key={i} className="flex-1 bg-muted-foreground/40" style={{ height: `${Math.max(4, (v / maxBar) * 100)}%` }} />
             ))}
           </div>
           <p className="text-xs text-muted-foreground">

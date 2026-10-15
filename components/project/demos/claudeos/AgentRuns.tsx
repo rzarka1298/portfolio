@@ -48,9 +48,9 @@ function RunTable({
         {caption} <span className="font-normal normal-case tracking-normal">({sessions.length})</span>
       </SectionLabel>
       {sessions.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">{empty}</p>
+        <p className="border border-dashed p-3 text-xs text-muted-foreground">{empty}</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto border">
           <table className="w-full min-w-[34rem] text-left text-xs">
             <caption className="sr-only">{caption}</caption>
             <thead className="bg-muted/60 text-muted-foreground">
@@ -73,7 +73,7 @@ function RunTable({
                       type="button"
                       aria-pressed={selected === s.runId}
                       onClick={() => onSelect(s.runId)}
-                      className={cn('rounded text-left font-medium underline-offset-2 hover:underline', FOCUS)}
+                      className={cn('text-left font-medium underline-offset-2 hover:underline', FOCUS)}
                     >
                       {s.name}
                     </button>
@@ -148,7 +148,7 @@ export function AgentRunsView({
           empty="Every session belongs to a project."
         />
       </div>
-      <aside aria-label="Session detail" className="min-w-0 rounded-xl border bg-card/80 p-4 text-sm">
+      <aside aria-label="Session detail" className="min-w-0 border bg-card/80 p-4 text-sm">
         {!sel ? (
           <p className="text-muted-foreground">Select a session to see its detail.</p>
         ) : (
@@ -159,7 +159,7 @@ export function AgentRunsView({
                 type="button"
                 aria-label="Close detail"
                 onClick={() => onSelect(null)}
-                className={cn('rounded p-0.5 text-muted-foreground hover:bg-muted', FOCUS)}
+                className={cn('p-0.5 text-muted-foreground hover:bg-muted', FOCUS)}
               >
                 <X aria-hidden className="h-4 w-4" />
               </button>
@@ -184,7 +184,7 @@ export function AgentRunsView({
               ))}
             </dl>
             {sel.state === 'waiting-for-approval' && (
-              <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">
+              <p className="bg-muted p-2 text-xs text-muted-foreground">
                 Claude is asking permission in its own terminal. That prompt is answered there, not in the inbox.
               </p>
             )}

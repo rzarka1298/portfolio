@@ -29,7 +29,7 @@ const SPEEDS = [1, 4, 16] as const;
 type Speed = (typeof SPEEDS)[number];
 
 const btn = cn(
-  'inline-flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-md border bg-background px-2.5 text-xs font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-40',
+  'inline-flex h-9 min-w-9 items-center justify-center gap-1.5 border bg-background px-2.5 text-xs font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-40',
   focusRing,
 );
 
@@ -102,7 +102,7 @@ export default function HarnessFlowReplay() {
         {/* Honest framing */}
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-teal-500/50 bg-teal-50 px-2.5 py-0.5 text-[11px] font-medium text-teal-800 dark:bg-teal-950 dark:text-teal-200">
+            <span className="border border-bp-line/50 bg-bp-line/10 px-2.5 py-0.5 text-[11px] font-medium text-bp-line">
               Recorded run · {replay.source.recorded} · scrubbed
             </span>
             <span className="text-[11px] text-muted-foreground">Checks passed but review rejected → repair → re-verify</span>
@@ -112,7 +112,7 @@ export default function HarnessFlowReplay() {
             nothing is executing live. Values the recording did not keep are marked as unavailable.
           </p>
           <details className="text-xs text-muted-foreground">
-            <summary className={cn('cursor-pointer rounded', focusRing)}>About this recording</summary>
+            <summary className={cn('cursor-pointer ', focusRing)}>About this recording</summary>
             <ul className="mt-2 list-disc space-y-1 pl-5 leading-relaxed">
               <li>
                 Command: <code className="break-all font-mono">{replay.source.entry_point}</code>
@@ -129,13 +129,13 @@ export default function HarnessFlowReplay() {
         </div>
 
         {/* PRD */}
-        <div className="rounded-xl border bg-card">
+        <div className="border bg-card">
           <button
             type="button"
             aria-expanded={prdOpen}
             aria-controls="hf-prd"
             onClick={() => setPrdOpen((o) => !o)}
-            className={cn('flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-left text-sm font-medium', focusRing)}
+            className={cn('flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium', focusRing)}
           >
             <span>
               Input brief <span className="font-normal text-muted-foreground">· inventory-prd.md (sample PRD)</span>
@@ -164,7 +164,7 @@ export default function HarnessFlowReplay() {
         <div
           role="toolbar"
           aria-label="Replay controls"
-          className="space-y-2 sm:sticky sm:top-20 sm:z-10 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur"
+          className="space-y-2 sm:sticky sm:top-20 sm:z-10 border bg-background/95 p-3 backdrop-blur"
         >
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={btn} onClick={restart} aria-label="Restart replay" title="Restart">
@@ -175,7 +175,7 @@ export default function HarnessFlowReplay() {
             </button>
             <button
               type="button"
-              className={cn(btn, 'border-teal-600 bg-teal-700 px-4 text-white hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500')}
+              className={cn(btn, 'border-bp-signal bg-bp-signal px-4 text-[#0B2341] hover:bg-bp-signal/90')}
               onClick={togglePlay}
               aria-label={playing ? 'Pause replay' : atEnd ? 'Replay from start' : 'Play replay'}
               title="Play / pause (K)"
@@ -189,7 +189,7 @@ export default function HarnessFlowReplay() {
             <button type="button" className={btn} onClick={() => seekFrame(frames.length - 1)} disabled={atEnd} aria-label="Skip to end" title="Skip to end">
               <ChevronsRight className="h-4 w-4" aria-hidden />
             </button>
-            <div role="radiogroup" aria-label="Playback speed" className="ml-auto flex overflow-hidden rounded-md border">
+            <div role="radiogroup" aria-label="Playback speed" className="ml-auto flex overflow-hidden border">
               {SPEEDS.map((sp) => (
                 <button
                   key={sp}
@@ -221,7 +221,7 @@ export default function HarnessFlowReplay() {
               }}
               aria-label="Replay position"
               aria-valuetext={`t+${Math.floor(clock)} s of ${RUN_SECONDS} s, frame ${count} of ${frames.length}`}
-              className="h-2 min-w-0 flex-1 cursor-pointer accent-teal-600"
+              className="h-2 min-w-0 flex-1 cursor-pointer accent-[hsl(var(--bp-signal))]"
             />
             <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground" aria-hidden>
               {Math.floor(clock)}s / {RUN_SECONDS}s
@@ -233,12 +233,12 @@ export default function HarnessFlowReplay() {
         </div>
 
         {/* Dashboard miniature */}
-        <div className="overflow-hidden rounded-2xl border bg-background shadow-sm">
+        <div className="overflow-hidden border border-bp-line/50 bg-background">
           <div className="flex items-center gap-2 border-b bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
             <span className="flex gap-1" aria-hidden>
-              <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
-              <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
-              <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
+              <span className="h-2 w-2 border border-bp-line-soft" />
+              <span className="h-2 w-2 border border-bp-line-soft" />
+              <span className="h-2 w-2 bg-bp-signal" />
             </span>
             <span className="truncate">HarnessFlow dashboard · Projects / {replay.project.name} / Run</span>
           </div>

@@ -69,7 +69,7 @@ export function ProjectsView({
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {PROJECTS.map((p) => (
-        <article key={p.id} aria-labelledby={`prj-${p.id}`} className="flex min-w-0 flex-col gap-2.5 rounded-xl border bg-card/80 p-4">
+        <article key={p.id} aria-labelledby={`prj-${p.id}`} className="flex min-w-0 flex-col gap-2.5 border bg-card/80 p-4">
           <header className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 id={`prj-${p.id}`} className="flex items-center gap-1.5 font-semibold">

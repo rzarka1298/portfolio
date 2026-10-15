@@ -75,7 +75,7 @@ function Tree({
               aria-pressed={selected === n.id}
               onClick={() => onSelect(n.id)}
               className={cn(
-                'flex w-full min-w-0 items-center gap-1 rounded px-1 py-0.5 text-left',
+                'flex w-full min-w-0 items-center gap-1 px-1 py-0.5 text-left',
                 FOCUS,
                 selected === n.id ? 'bg-muted font-medium' : 'hover:bg-muted/50',
                 dim && 'opacity-40',
@@ -127,7 +127,7 @@ export function KnowledgePreview({ notes }: { notes: VaultNote[] }) {
 
   return (
     <div className="space-y-4">
-      <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+      <p className="border border-dashed px-3 py-2 text-xs text-muted-foreground">
         <span className={cn('font-semibold', ACCENT_TEXT)}>Preview: not yet in the plugin.</span> The managed vault and
         its write rules exist; this browser over them is a later phase.
       </p>
@@ -144,7 +144,7 @@ export function KnowledgePreview({ notes }: { notes: VaultNote[] }) {
                   aria-pressed={stage === s}
                   onClick={() => setStage(stage === s ? null : s)}
                   className={cn(
-                    'rounded-md border px-2 py-1 transition-colors',
+                    'border px-2 py-1 transition-colors',
                     FOCUS,
                     stage === s ? cn('bg-muted font-semibold', ACCENT_TEXT) : 'hover:bg-muted/50',
                   )}
@@ -166,17 +166,17 @@ export function KnowledgePreview({ notes }: { notes: VaultNote[] }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-        <div className="min-w-0 rounded-xl border bg-card/80 p-3 text-xs">
+        <div className="min-w-0 border bg-card/80 p-3 text-xs">
           <Tree node={buildTree(notes)} depth={0} selected={selected} stage={stage} onSelect={setSelected} />
         </div>
-        <div className="min-w-0 rounded-xl border bg-card/80 p-3 text-xs">
+        <div className="min-w-0 border bg-card/80 p-3 text-xs">
           {!sel ? (
             <p className="text-muted-foreground">Select a note to see its provenance.</p>
           ) : (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold">{sel.title}</h3>
               <p className="break-all font-mono text-muted-foreground">{folderOf(sel.path).join('/')}/{sel.path.split('/').pop()}</p>
-              <pre className="overflow-x-auto rounded-md bg-muted p-2 font-mono text-[0.7rem] leading-relaxed">
+              <pre className="overflow-x-auto bg-muted p-2 font-mono text-[0.7rem] leading-relaxed">
                 {'---\n'}
                 {frontmatter(sel).map(([k, v]) => `${k}: ${v}\n`)}
                 {'---'}
@@ -187,7 +187,7 @@ export function KnowledgePreview({ notes }: { notes: VaultNote[] }) {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card/80 p-3 text-xs">
+      <div className="border bg-card/80 p-3 text-xs">
         <p className="mb-2">
           A process working for <span className="font-semibold">{orbit?.displayName ?? 'a workspace'}</span> may only
           write inside <span className="font-mono">workspaces/{orbit?.id ?? '…'}/</span>.
@@ -195,7 +195,7 @@ export function KnowledgePreview({ notes }: { notes: VaultNote[] }) {
         <Btn onClick={() => setRefusal(true)}>Try a cross-scope write</Btn>
         <div aria-live="polite">
           {refusal && (
-            <pre className={cn('mt-2 overflow-x-auto whitespace-pre-wrap break-all rounded-md bg-muted p-2 font-mono text-[0.7rem]', DANGER_TEXT)}>
+            <pre className={cn('mt-2 overflow-x-auto whitespace-pre-wrap break-all bg-muted p-2 font-mono text-[0.7rem]', DANGER_TEXT)}>
               <ShieldAlert aria-hidden className="mr-1 inline h-3.5 w-3.5 align-text-bottom" />
               {`write global/wiki/new-note.md\n  declared scope: workspace:${orbit?.id ?? ''}\n  refused: write target is outside the declared scope`}
             </pre>

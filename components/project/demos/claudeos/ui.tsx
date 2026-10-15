@@ -3,10 +3,10 @@ import { Lock, RefreshCw, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CardStateOverride, Freshness } from './types';
 
-/** The real app's accent: deep pink on light surfaces, bright pink on dark. */
-export const ACCENT_TEXT = 'text-[#c2185b] dark:text-[#ff5fa2]';
-export const ACCENT_BG = 'bg-[#c2185b] dark:bg-[#ff5fa2]';
-export const ACCENT_BORDER = 'border-[#c2185b] dark:border-[#ff5fa2]';
+/** Accent for the mock: the site's signal orange (the real app uses pink). */
+export const ACCENT_TEXT = 'text-bp-signal-ink';
+export const ACCENT_BG = 'bg-bp-signal';
+export const ACCENT_BORDER = 'border-bp-signal';
 export const DANGER_TEXT = 'text-red-700 dark:text-[#ff6b6b]';
 export const FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background';
@@ -23,11 +23,11 @@ export function Btn({
       type="button"
       {...rest}
       className={cn(
-        'inline-flex min-h-[2rem] items-center justify-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex min-h-[2rem] items-center justify-center gap-1.5 border px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
         FOCUS,
         variant === 'default' && 'border-border bg-background hover:bg-muted',
         variant === 'primary' &&
-          'border-transparent bg-[#c2185b] text-white hover:bg-[#a5134c] dark:bg-[#ff5fa2] dark:text-[#0b0b0f] dark:hover:bg-[#ff7ab2]',
+          'border-transparent bg-bp-signal text-[#0B2341] hover:bg-bp-signal/90',
         variant === 'ghost' && 'border-transparent bg-transparent hover:bg-muted',
         variant === 'danger' && 'border-red-700/40 bg-background text-red-700 hover:bg-red-50 dark:border-[#ff6b6b]/40 dark:text-[#ff6b6b] dark:hover:bg-[#ff6b6b]/10',
         className,
@@ -49,7 +49,7 @@ export function Chip({
       aria-pressed={active}
       {...rest}
       className={cn(
-        'inline-flex min-h-[1.75rem] items-center gap-1 rounded-full border px-2.5 text-xs transition-colors',
+        'inline-flex min-h-[1.75rem] items-center gap-1 border px-2.5 text-xs transition-colors',
         FOCUS,
         active ? cn('font-semibold', ACCENT_BORDER, ACCENT_TEXT, 'bg-muted') : 'border-border text-muted-foreground hover:bg-muted',
       )}
@@ -76,7 +76,7 @@ const FRESHNESS_LABEL: Record<Freshness, string> = {
 
 const FRESHNESS_DOT: Record<Freshness, string> = {
   live: 'bg-emerald-500',
-  cached: 'bg-sky-500',
+  cached: 'bg-bp-line-soft',
   stale: 'bg-amber-500',
   unavailable: 'bg-muted-foreground',
 };
@@ -94,7 +94,7 @@ export function FreshnessFooter({
     <div
       className={cn(
         'mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 border-t pt-2 text-[0.68rem]',
-        tone === 'cream' ? 'border-[#0b0b0f]/15 text-[#5a5650]' : 'border-border text-muted-foreground',
+        tone === 'cream' ? 'border-bp-line-soft/50 text-bp-ink-dim' : 'border-border text-muted-foreground',
       )}
     >
       <span className="inline-flex items-center gap-1">
@@ -150,7 +150,7 @@ export function CardFrame(p: CardProps) {
     <section
       aria-label={p.title}
       className={cn(
-        'flex min-w-0 flex-col gap-3 rounded-xl border bg-card/80 p-4 shadow-sm transition-opacity',
+        'flex min-w-0 flex-col gap-3 border bg-card/80 p-4 transition-opacity',
         p.wide && 'sm:col-span-2',
         p.disconnected && 'opacity-[0.85]',
       )}
