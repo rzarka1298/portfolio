@@ -1,76 +1,20 @@
-import { Component, Suspense, useEffect, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, Check, Copy, ExternalLink, Github } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Component, Suspense, useEffect, type ReactNode } from 'react';
+import { useParams } from 'react-router-dom';
+import { BlueprintFrame } from '../blueprint';
 import NotFound from '../NotFound';
 import ArchitectureDiagram from './ArchitectureDiagram';
 import { getDemo } from './demos';
 import { getProjectPage } from '../../content/projects';
 import type { ProjectPage as ProjectPageData } from '../../content/projects/types';
-
-/* ------------------------------------------------------------------ */
-/* Small building blocks                                               */
-/* ------------------------------------------------------------------ */
-
-function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
-  return (
-    <motion.section
-      id={id}
-      className="py-10 md:py-14"
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.5 }}
-    >
-      <h2 className="text-2xl md:text-3xl mb-6">{title}</h2>
-      {children}
-    </motion.section>
-  );
-}
-
-function Paragraphs({ items }: { items: string[] }) {
-  return (
-    <div className="space-y-4 text-muted-foreground leading-relaxed">
-      {items.map((p, i) => (
-        <p key={i}>{p}</p>
-      ))}
-    </div>
-  );
-}
-
-function CodeBlock({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* clipboard unavailable (insecure context) — no-op */
-    }
-  };
-
-  return (
-    <div className="relative">
-      <pre className="overflow-x-auto rounded-lg border bg-muted/60 p-4 pr-12 text-sm">
-        <code>{code}</code>
-      </pre>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={copy}
-        className="absolute right-1.5 top-1.5"
-        aria-label={copied ? 'Copied' : 'Copy to clipboard'}
-      >
-        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      </Button>
-    </div>
-  );
-}
+import BillOfMaterials from './page/BillOfMaterials';
+import InstallTerminal from './page/InstallTerminal';
+import PageWipe from './page/PageWipe';
+import ProjectPager from './page/ProjectPager';
+import SheetIndex from './page/SheetIndex';
+import SheetSection from './page/SheetSection';
+import SpecCallouts from './page/SpecCallouts';
+import TitleBlock from './page/TitleBlock';
+import { neighbours, pad2, partNumber, sheetsFor, type Sheet } from './page/sheets';
 
 /** Keeps a broken demo from taking down the whole page. */
 class DemoBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -86,50 +30,50 @@ class DemoBoundary extends Component<{ children: ReactNode }, { failed: boolean 
 
   render() {
     if (this.state.failed) {
-      return <p className="text-sm text-muted-foreground">This demo couldn't be loaded.</p>;
+      return <p className="p-6 text-sm text-bp-ink-dim">This demo couldn't be loaded.</p>;
     }
     return this.props.children;
   }
 }
 
-function ProjectLinks({ links }: { links: ProjectPageData['links'] }) {
-  if (!links.github && !links.docs && !links.live) return null;
+function Paragraphs({ items }: { items: string[] }) {
   return (
-    <div className="flex flex-wrap gap-3">
-      {links.github && (
-        <Button asChild>
-          <a href={links.github} target="_blank" rel="noopener noreferrer">
-            <Github className="w-4 h-4" />
-            View code
-          </a>
-        </Button>
-      )}
-      {links.docs && (
-        <Button variant="outline" asChild>
-          <a href={links.docs} target="_blank" rel="noopener noreferrer">
-            <BookOpen className="w-4 h-4" />
-            Docs
-          </a>
-        </Button>
-      )}
-      {links.live && (
-        <Button variant="outline" asChild>
-          <a href={links.live} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="w-4 h-4" />
-            Live
-          </a>
-        </Button>
-      )}
+    <div className="space-y-4 text-[0.9375rem] leading-relaxed text-bp-ink-dim md:text-base">
+      {items.map((p, i) => (
+        <p key={i}>{p}</p>
+      ))}
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Page                                                                */
-/* ------------------------------------------------------------------ */
+function DemoFallback() {
+  return (
+    <div className="flex h-72 items-center justify-center">
+      <span className="bp-label animate-pulse text-bp-line">Loading demo</span>
+    </div>
+  );
+}
 
 export function ProjectPage({ project }: { project: ProjectPageData }) {
   const Demo = getDemo(project.demoId);
+  const sheets = sheetsFor(project, Boolean(Demo));
+  const part = partNumber(project.slug);
+  const pager = neighbours(project.slug);
+
+  const sheet = (id: string): [number, Sheet] => {
+    const i = sheets.findIndex((s) => s.id === id);
+    return [i + 1, sheets[i]];
+  };
+  const section = (id: string, children: ReactNode, intro?: ReactNode) => {
+    const [index, s] = sheet(id);
+    if (!s) return null;
+    return (
+      <SheetSection id={id} index={index} total={sheets.length} label={s.label} title={s.title} intro={intro}>
+        {children}
+      </SheetSection>
+    );
+  };
+  const fig = (id: string) => `Fig. ${pad2(sheet(id)[0])}`;
 
   useEffect(() => {
     const previous = document.title;
@@ -140,120 +84,72 @@ export function ProjectPage({ project }: { project: ProjectPageData }) {
   }, [project.title]);
 
   return (
-    <main id="main" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-      <Button variant="ghost" size="sm" asChild className="-ml-2 mb-6">
-        <Link to="/#projects">
-          <ArrowLeft className="w-4 h-4" />
-          All projects
-        </Link>
-      </Button>
+    <main id="main" className="overflow-x-clip pb-24 pt-14">
+      <PageWipe label={`${part} / ${project.title}`} />
 
-      {/* Hero */}
-      <motion.header
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="pb-6"
-      >
-        {project.status && (
-          <Badge variant="secondary" className="mb-4 max-w-full whitespace-normal text-left">{project.status}</Badge>
-        )}
-        <h1 className="text-4xl md:text-6xl mb-4">{project.title}</h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mb-8">{project.tagline}</p>
-        <ProjectLinks links={project.links} />
-      </motion.header>
+      <div className="mx-auto w-full max-w-[90rem] px-4 sm:px-6 lg:px-10 lg:pr-14">
+        <TitleBlock project={project} part={part} sheetCount={sheets.length} />
 
-      {/* Summary + problem */}
-      <Section id="overview" title="Overview">
-        <div className="grid gap-8 md:grid-cols-2">
-          <div>
-            <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">What it is</h3>
-            <Paragraphs items={project.summary} />
-          </div>
-          <div>
-            <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">The problem</h3>
-            <Paragraphs items={project.problem} />
+        <div className="lg:grid lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[13rem_minmax(0,1fr)]">
+          <SheetIndex sheets={sheets} part={part} />
+
+          <div className="min-w-0">
+            {section(
+              'overview',
+              <div className="grid gap-10 md:grid-cols-2 md:gap-0">
+                <div className="md:pr-10">
+                  <h3 className="bp-label mb-4 text-bp-line">What it is</h3>
+                  <Paragraphs items={project.summary} />
+                </div>
+                <div className="md:border-l md:border-bp-line-soft/40 md:pl-10">
+                  <h3 className="bp-label mb-4 text-bp-line">The problem</h3>
+                  <Paragraphs items={project.problem} />
+                </div>
+              </div>,
+            )}
+
+            {section(
+              'architecture',
+              <figure className="m-0">
+                <BlueprintFrame label={`${fig('architecture')} / System`} meta={part} className="pt-5">
+                  <ArchitectureDiagram architecture={project.architecture} githubUrl={project.links.github} />
+                </BlueprintFrame>
+                <figcaption className="mt-4 flex gap-3 text-sm text-bp-ink-dim">
+                  <span className="bp-label shrink-0 pt-[0.2rem] text-bp-line">{fig('architecture')}</span>
+                  <span>
+                    Click a component to see what it does. Pick a trace and press Play to follow a request through the
+                    system.
+                  </span>
+                </figcaption>
+              </figure>,
+            )}
+
+            {Demo &&
+              section(
+                'demo',
+                <BlueprintFrame label={`${fig('demo')} / Live demo`} meta={part} bordered className="bg-bp-bg">
+                  {/* Demos have their own scrollers and gestures; keep Lenis out. */}
+                  <div data-lenis-prevent className="p-3 pt-5 sm:p-5 sm:pt-6">
+                    <DemoBoundary>
+                      <Suspense fallback={<DemoFallback />}>
+                        <Demo project={project} />
+                      </Suspense>
+                    </DemoBoundary>
+                  </div>
+                </BlueprintFrame>,
+              )}
+
+            {section('highlights', <SpecCallouts items={project.highlights} />)}
+
+            {section('stack', <BillOfMaterials items={project.techStack} part={part} />)}
+
+            {project.install &&
+              section('install', <InstallTerminal install={project.install} slug={project.slug} />, project.install.intro)}
+
+            {pager && <ProjectPager prev={pager.prev} next={pager.next} />}
           </div>
         </div>
-      </Section>
-
-      {/* Highlights */}
-      {project.highlights.length > 0 && (
-        <Section id="highlights" title="Highlights">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {project.highlights.map((h) => (
-              <Card key={h.title} className="h-full">
-                <CardHeader>
-                  <CardTitle className="text-lg">{h.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 text-sm text-muted-foreground leading-relaxed">
-                  {h.body}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Architecture */}
-      {project.architecture.nodes.length > 0 && (
-        <Section id="architecture" title="Architecture">
-          <p className="text-muted-foreground mb-6">
-            Click a component to see what it does. Pick a trace and press Play to follow a request through the system.
-          </p>
-          <ArchitectureDiagram architecture={project.architecture} githubUrl={project.links.github} />
-        </Section>
-      )}
-
-      {/* Demo slot — renders nothing when no demo is registered */}
-      {Demo && (
-        <Section id="demo" title="Try it">
-          <DemoBoundary>
-            <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted" />}>
-              <Demo project={project} />
-            </Suspense>
-          </DemoBoundary>
-        </Section>
-      )}
-
-      {/* Tech stack */}
-      {project.techStack.length > 0 && (
-        <Section id="tech" title="Tech stack">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {project.techStack.map((t) => (
-              <div key={t.name} className="rounded-lg border bg-card p-4">
-                <div className="font-medium">{t.name}</div>
-                <div className="text-sm text-muted-foreground">{t.role}</div>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Install */}
-      {project.install && (
-        <Section id="install" title="Get started">
-          <p className="text-muted-foreground mb-6">{project.install.intro}</p>
-          <ol className="space-y-5">
-            {project.install.steps.map((s, i) => (
-              <li key={i}>
-                <div className="mb-2 text-sm font-medium">
-                  <span className="text-muted-foreground mr-2">{i + 1}.</span>
-                  {s.label}
-                </div>
-                <CodeBlock code={s.code} />
-              </li>
-            ))}
-          </ol>
-        </Section>
-      )}
-
-      {/* Links */}
-      {(project.links.github || project.links.docs || project.links.live) && (
-        <Section id="links" title="Links">
-          <ProjectLinks links={project.links} />
-        </Section>
-      )}
+      </div>
     </main>
   );
 }
