@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { ChevronDown, ChevronsRight, Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react';
-import type { DemoProps } from '../index';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { framesAt, frames, replay, runClockAt, RUN_SECONDS, vt, V_TOTAL } from './data';
@@ -34,7 +33,7 @@ const btn = cn(
   focusRing,
 );
 
-export default function HarnessFlowReplay(_props: DemoProps) {
+export default function HarnessFlowReplay() {
   const [v, setV] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);

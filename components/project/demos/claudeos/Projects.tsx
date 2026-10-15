@@ -47,7 +47,7 @@ export function LaunchToolbar({
   );
 }
 
-export function gitLine(p: Project): string {
+function gitLine(p: Project): string {
   const g = p.git;
   if (g.kind === 'repo') {
     if (g.detached || !g.branch) return 'Detached HEAD';

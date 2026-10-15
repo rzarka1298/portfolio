@@ -7,7 +7,7 @@ import type { Approval, Session } from './types';
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 
-export function sessionDuration(s: Session, now: number): string {
+function sessionDuration(s: Session, now: number): string {
   if (s.state === 'stale') return `At least ${duration((s.lastActivityAt ?? s.startedAt) - s.startedAt)}`;
   return duration((s.endedAt ?? now) - s.startedAt);
 }

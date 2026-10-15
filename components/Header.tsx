@@ -9,6 +9,15 @@ interface HeaderProps {
   toggleDarkMode: () => void;
 }
 
+const navItems = [
+  { id: 'hero', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'contact', label: 'Contact' }
+];
+
 export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
   const [activeSection, setActiveSection] = useState('hero');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,15 +25,6 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isHome = pathname === '/';
-
-  const navItems = [
-    { id: 'hero', label: 'Home' },
-    { id: 'about', label: 'About' },
-    { id: 'experience', label: 'Experience' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'skills', label: 'Skills' },
-    { id: 'contact', label: 'Contact' }
-  ];
 
   useEffect(() => {
     const handleScroll = () => {

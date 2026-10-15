@@ -29,7 +29,7 @@ function isOpen(t: Task) {
   return t.status !== 'done' && t.status !== 'cancelled' && t.status !== 'proposed';
 }
 
-export function matches(t: Task, f: TaskFilter): boolean {
+function matches(t: Task, f: TaskFilter): boolean {
   switch (f) {
     case 'all':
       return t.status !== 'cancelled';
