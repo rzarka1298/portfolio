@@ -15,11 +15,11 @@ export default function HomePage() {
           <Hero />
         </section>
 
-        <section id="about" className="py-20">
+        <section id="about" className="py-20 overflow-x-clip">
           <About />
         </section>
 
-        <section id="experience" className="py-20">
+        <section id="experience" className="py-20 overflow-x-clip">
           <Experience />
         </section>
 
@@ -31,7 +31,7 @@ export default function HomePage() {
           <Skills />
         </section>
 
-        <section id="contact" className="py-20">
+        <section id="contact" className="py-20 overflow-x-clip">
           <Contact />
         </section>
       </main>
