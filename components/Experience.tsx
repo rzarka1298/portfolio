@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Calendar, MapPin, Award, TrendingUp, Users, Code, Cloud, Server, Microscope, Rocket } from 'lucide-react';
 import { Card, CardContent } from './ui/card';

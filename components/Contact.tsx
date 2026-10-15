@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Mail, Phone, MapPin, Github, Linkedin, Twitter, Send, Download, CheckCircle, Instagram } from 'lucide-react';
+import { Mail, Phone, MapPin, Github, Linkedin, Send, Download, CheckCircle, Instagram } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';

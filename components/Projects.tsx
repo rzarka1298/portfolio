@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Github, ExternalLink, Play, Filter, Eye, ArrowRight } from 'lucide-react';
@@ -32,7 +32,7 @@ export default function Projects() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const [selectedFilter, setSelectedFilter] = useState('All');
-  const [projectViews, setProjectViews] = useState<Record<string, number>>({});
+  const [projectViews] = useState<Record<string, number>>({});
 
   const projects: Project[] = [
     {

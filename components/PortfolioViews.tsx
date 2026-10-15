@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, Activity } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';

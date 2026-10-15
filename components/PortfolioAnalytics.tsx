@@ -83,7 +83,6 @@ export default function PortfolioAnalytics() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Fetch analytics data
   useEffect(() => {
@@ -114,7 +113,6 @@ export default function PortfolioAnalytics() {
         });
       } catch (err) {
         console.error('Analytics fetch error:', err);
-        setError('Unable to load analytics data');
         // Set fallback data for demo purposes
         setAnalytics({
           site: {
