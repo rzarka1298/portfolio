@@ -1,30 +1,41 @@
-import React, { useState, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Mail, Phone, MapPin, Github, Linkedin, Send, Download, CheckCircle, Instagram } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import React, { useState } from 'react';
+import { ArrowDownToLine, Check, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { trackVisit } from '../lib/analytics';
+import { cn } from '../lib/utils';
+import { BlueprintFrame, MagneticButton, Section, SignalEdge } from './blueprint';
 
+const EMAIL = 'rugvedzarkar@gmail.com';
+
+const contactRows: { label: string; value: string; href?: string; external?: boolean }[] = [
+  { label: 'Email', value: EMAIL, href: `mailto:${EMAIL}` },
+  { label: 'Phone', value: '443-567-0781', href: 'tel:443-567-0781' },
+  { label: 'Location', value: 'Clarksville, MD' },
+  { label: 'GitHub', value: 'rzarka1298', href: 'https://github.com/rzarka1298', external: true },
+  { label: 'LinkedIn', value: 'rugved-zarkar', href: 'https://www.linkedin.com/in/rugved-zarkar', external: true },
+  { label: 'Instagram', value: 'rugvedzarkar', href: 'https://www.instagram.com/rugvedzarkar/', external: true },
+];
+
+/**
+ * Sheet 06: the closing sheet. A big magnetic email CTA fed by a signal
+ * wire, an annotated contact block and the message form. The form posts
+ * to the Supabase `api/contact` function exactly as before.
+ */
 export default function Contact() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -37,25 +48,25 @@ export default function Contact() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
-          'apikey': publicAnonKey
+          Authorization: `Bearer ${publicAnonKey}`,
+          apikey: publicAnonKey,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
         toast.success("Message sent successfully! I'll get back to you soon.", {
-          description: "Thank you for reaching out. I typically respond within 24 hours."
+          description: 'Thank you for reaching out. I typically respond within 24 hours.',
         });
-        
+
         // Reset form
         setFormData({
           name: '',
           email: '',
           subject: '',
-          message: ''
+          message: '',
         });
 
         console.log('📧 Contact form submitted:', { id: result.id });
@@ -64,8 +75,8 @@ export default function Contact() {
       }
     } catch (error) {
       console.error('Contact form error:', error);
-      toast.error("Failed to send message", {
-        description: "Please try again or reach out via email directly."
+      toast.error('Failed to send message', {
+        description: 'Please try again or reach out via email directly.',
       });
     } finally {
       setIsSubmitting(false);
@@ -73,320 +84,212 @@ export default function Contact() {
   };
 
   const downloadResume = () => {
-    // Track resume download
-    try {
-      fetch(`https://${projectId}.supabase.co/functions/v1/server/api/analytics/visit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
-          'apikey': publicAnonKey
-        },
-        body: JSON.stringify({
-          page: '/resume-download',
-          referrer: 'contact-form'
-        })
-      });
-    } catch (error) {
-      console.error('Failed to track resume download:', error);
-    }
-    
-    // Download resume
-    const link = document.createElement('a');
+    // Track resume download (same event as before: page /resume-download, referrer contact-form)
+    trackVisit('/resume-download', 'contact-form');
+
     // Must be served from public/ — Vite does not serve the sibling assets/ directory
+    const link = document.createElement('a');
     link.href = '/Zarkar_Rugved_Resume.pdf';
     link.download = 'Rugved_Zarkar_Resume.pdf';
     link.click();
-    
-    toast.success("Resume downloaded successfully!");
+
+    toast.success('Resume downloaded successfully!');
   };
 
-  const contactInfo = [
-    {
-      icon: <Mail className="w-5 h-5" />,
-      label: "Email",
-      value: "rugvedzarkar@gmail.com",
-      href: "mailto:rugvedzarkar@gmail.com"
-    },
-    {
-      icon: <Phone className="w-5 h-5" />,
-      label: "Phone",
-      value: "443-567-0781",
-      href: "tel:443-567-0781"
-    },
-    {
-      icon: <MapPin className="w-5 h-5" />,
-      label: "Location",
-      value: "Clarksville, MD",
-      href: null
-    }
-  ];
-
-  const socialLinks = [
-    {
-      name: "GitHub",
-      icon: <Github className="w-6 h-6" />,
-      href: "https://github.com/rzarka1298",
-      color: "hover:text-gray-900 dark:hover:text-gray-100"
-    },
-    {
-      name: "LinkedIn",
-      icon: <Linkedin className="w-6 h-6" />,
-      href: "https://www.linkedin.com/in/rugved-zarkar",
-      color: "hover:text-blue-600"
-    },
-    {
-      name: "Instagram",
-      icon: <Instagram className="w-6 h-6" />,
-      href: "https://www.instagram.com/rugvedzarkar/",
-      color: "hover:text-blue-400"
-    }
-  ];
-
   return (
-    <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+    <Section
+      id="contact"
+      index={6}
+      label="Contact"
+      title="Let's work together"
+      intro="Have a project in mind? Send me a message, or email me directly."
+      className="overflow-x-clip"
+    >
+      {/* Big CTA, fed by a signal wire */}
+      <div className="relative">
+        <svg aria-hidden="true" className="pointer-events-none absolute -left-4 -top-8 h-8 w-[calc(100%+1rem)] sm:-left-6 sm:w-[calc(100%+1.5rem)]">
+          <SignalEdge d="M0 4 H40 L56 20 H2000" draw="view" duration={1.4} dots={2} speed={3.2} />
+        </svg>
+        <MagneticButton
+          href={`mailto:${EMAIL}`}
+          strength={0.12}
+          max={8}
+          className="group relative w-full justify-between gap-6 border border-bp-line/60 bg-bp-panel px-5 py-8 text-left transition-colors hover:border-bp-signal sm:px-8 sm:py-12"
         >
-          <h2 className="text-4xl md:text-5xl mb-4">Let's Work Together</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Have a project in mind? I'd love to hear from you. Send me a message and let's start building something amazing.
-          </p>
-        </motion.div>
+          <span className="flex min-w-0 flex-col gap-4">
+            <span className="bp-label text-bp-signal-ink">Email me</span>
+            <span className="break-words font-display text-[clamp(1.3rem,5.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.035em] text-bp-ink">
+              {EMAIL}
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className="hidden h-14 w-14 shrink-0 items-center justify-center bg-bp-signal text-[hsl(214_74%_11%)] transition-transform duration-300 group-hover:-rotate-12 sm:flex lg:h-20 lg:w-20"
+          >
+            <Send className="h-5 w-5 lg:h-7 lg:w-7" />
+          </span>
+          <span aria-hidden="true" className="absolute -bottom-px left-0 h-px w-0 bg-bp-signal transition-[width] duration-500 ease-blueprint group-hover:w-full" />
+        </MagneticButton>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-12">
-        {/* Contact Form */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center">
-                <Mail className="w-6 h-6 mr-3 text-primary" />
-                Send me a message
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm mb-2">
-                      Name *
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      placeholder="Your name"
-                      className="transition-all duration-300 focus:scale-105"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm mb-2">
-                      Email *
-                    </label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="your.email@example.com"
-                      className="transition-all duration-300 focus:scale-105"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label htmlFor="subject" className="block text-sm mb-2">
-                    Subject *
-                  </label>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
-                    placeholder="What's this about?"
-                    className="transition-all duration-300 focus:scale-105"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="message" className="block text-sm mb-2">
-                    Message *
-                  </label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
-                    rows={5}
-                    placeholder="Tell me about your project or idea..."
-                    className="transition-all duration-300 focus:scale-105 resize-none"
-                  />
-                </div>
-                
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={isSubmitting}
-                  className="w-full group"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform" />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Contact Info & Social Links */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="space-y-8"
-        >
-          {/* Contact Information */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl">Get in touch</CardTitle>
-              <p className="text-muted-foreground">
-                Feel free to reach out through any of these channels
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {contactInfo.map((info, index) => (
-                <motion.div
-                  key={info.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.6 + (0.1 * index) }}
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors duration-300"
-                >
-                  <div className="text-primary">{info.icon}</div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{info.label}</p>
-                    {info.href ? (
+      <div className="mt-16 grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+        {/* Annotated contact block */}
+        <div>
+          <BlueprintFrame label="Notes / Contact" solid bordered className="px-5 pb-4 pt-7 sm:px-6">
+            <dl>
+              {contactRows.map((row, i) => (
+                <div key={row.label} className="flex items-baseline gap-3 border-b border-bp-line-soft/25 py-3 last:border-b-0">
+                  <dt className="flex shrink-0 items-baseline gap-2.5">
+                    <span aria-hidden="true" className="font-mono text-[0.6875rem] text-bp-line-soft">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="bp-label text-bp-line">{row.label}</span>
+                  </dt>
+                  <span aria-hidden="true" className="min-w-4 flex-1 translate-y-[-0.2em] border-b border-dotted border-bp-line-soft/60" />
+                  <dd className="min-w-0 text-right">
+                    {row.href ? (
                       <a
-                        href={info.href}
-                        className="hover:text-primary transition-colors duration-200"
+                        href={row.href}
+                        {...(row.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                        className="break-all text-[0.9375rem] text-bp-ink underline-offset-4 transition-colors hover:text-bp-line hover:underline"
                       >
-                        {info.value}
+                        {row.value}
                       </a>
                     ) : (
-                      <p>{info.value}</p>
+                      <span className="text-[0.9375rem] text-bp-ink">{row.value}</span>
                     )}
-                  </div>
-                </motion.div>
+                  </dd>
+                </div>
               ))}
-            </CardContent>
-          </Card>
-
-          {/* Social Links */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl">Find me online</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex space-x-4">
-                {socialLinks.map((social, index) => (
-                  <motion.a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ 
-                      duration: 0.5, 
-                      delay: 0.8 + (0.1 * index),
-                      type: "spring",
-                      stiffness: 100
-                    }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-3 bg-muted rounded-full text-muted-foreground transition-all duration-300 ${social.color}`}
+              <div className="flex items-baseline gap-3 py-3">
+                <dt className="flex shrink-0 items-baseline gap-2.5">
+                  <span aria-hidden="true" className="font-mono text-[0.6875rem] text-bp-line-soft">
+                    07
+                  </span>
+                  <span className="bp-label text-bp-line">Résumé</span>
+                </dt>
+                <span aria-hidden="true" className="min-w-4 flex-1 translate-y-[-0.2em] border-b border-dotted border-bp-line-soft/60" />
+                <dd>
+                  <button
+                    type="button"
+                    onClick={downloadResume}
+                    className="inline-flex items-center gap-2 text-[0.9375rem] text-bp-ink underline-offset-4 transition-colors hover:text-bp-line hover:underline"
                   >
-                    {social.icon}
-                  </motion.a>
-                ))}
+                    <ArrowDownToLine className="h-3.5 w-3.5 text-bp-line" aria-hidden="true" />
+                    Download PDF
+                  </button>
+                </dd>
               </div>
-            </CardContent>
-          </Card>
+            </dl>
+          </BlueprintFrame>
 
-          {/* Resume Download */}
-          <Card className="shadow-lg">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <h3 className="text-xl mb-3">Interested in my experience?</h3>
-                <p className="text-muted-foreground mb-6">
-                  Download my resume to learn more about my background and projects
-                </p>
-                <Button
-                  onClick={downloadResume}
-                  size="lg"
-                  variant="outline"
-                  className="group"
-                >
-                  <Download className="w-4 h-4 mr-2 group-hover:animate-bounce" />
-                  Download Resume
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Fun Easter Egg */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="text-center p-6 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl border border-primary/20"
-          >
-            <div className="text-2xl mb-2">🤖</div>
-            <p className="text-sm text-muted-foreground">
-              <strong>Fun fact:</strong> I'm currently working on wearable robotics! 
-              Feel free to ask me about my latest research projects.
-            </p>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Response Promise */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 1.0 }}
-        className="mt-16 text-center"
-      >
-        <div className="flex items-center justify-center space-x-2 text-primary mb-4">
-          <CheckCircle className="w-5 h-5" />
-          <span>Quick Response Guaranteed</span>
+          <ul className="mt-8 space-y-3 font-mono text-xs leading-relaxed text-bp-ink-dim">
+            <li className="flex gap-3">
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-bp-line" aria-hidden="true" />I usually reply within
+              24 hours.
+            </li>
+            <li className="flex gap-3">
+              <span aria-hidden="true" className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 bg-bp-signal" />
+              Ask me about my wearable robotics research.
+            </li>
+          </ul>
         </div>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          I typically respond to all inquiries within 24 hours. Looking forward to hearing from you!
-        </p>
-      </motion.div>
+
+        {/* Message form */}
+        <BlueprintFrame label="Form 06-A / Message" solid bordered className="p-5 pt-8 sm:p-8 sm:pt-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Field id="name" label="Name" no="01">
+                <input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  autoComplete="name"
+                  placeholder="Your name"
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="email" label="Email" no="02">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="email"
+                  placeholder="your.email@example.com"
+                  className={inputClass}
+                />
+              </Field>
+            </div>
+
+            <Field id="subject" label="Subject" no="03">
+              <input
+                id="subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                placeholder="What's this about?"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field id="message" label="Message" no="04">
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                rows={5}
+                placeholder="Tell me about your project or idea..."
+                className={cn(inputClass, 'resize-none')}
+              />
+            </Field>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="group flex h-12 w-full items-center justify-center gap-2.5 bg-bp-signal px-5 font-mono text-xs font-medium uppercase tracking-[0.12em] text-[hsl(214_74%_11%)] transition-colors hover:bg-bp-signal/90 disabled:cursor-wait disabled:opacity-70"
+            >
+              {isSubmitting ? (
+                <>
+                  <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin border-2 border-current border-r-transparent" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  Send message
+                </>
+              )}
+            </button>
+          </form>
+        </BlueprintFrame>
+      </div>
+    </Section>
+  );
+}
+
+const inputClass =
+  'block w-full border border-bp-line-soft/60 bg-bp-bg/70 px-3.5 py-3 text-base text-bp-ink placeholder:text-bp-ink-dim/60 transition-colors hover:border-bp-line/70 focus:border-bp-signal focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bp-signal';
+
+function Field({ id, label, no, children }: { id: string; label: string; no: string; children: React.ReactNode }) {
+  return (
+    <div className="group">
+      <label htmlFor={id} className="mb-2 flex items-baseline gap-2.5">
+        <span aria-hidden="true" className="font-mono text-[0.6875rem] text-bp-line-soft">
+          {no}
+        </span>
+        <span className="bp-label text-bp-line transition-colors group-focus-within:text-bp-signal-ink">
+          {label} <span aria-hidden="true">*</span>
+        </span>
+      </label>
+      {children}
     </div>
   );
 }

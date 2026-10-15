@@ -1,287 +1,273 @@
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Calendar, MapPin, Award, TrendingUp, Users, Code, Cloud, Server, Microscope, Rocket } from 'lucide-react';
-import { Card, CardContent } from './ui/card';
-import { Badge } from './ui/badge';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Section, useGsapContext } from './blueprint';
+import { cn } from '../lib/utils';
+import { experienceStats, roles, type Role } from './sections/experienceData';
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/**
+ * Sheet 03: experience as a signal trace. A vertical bus runs down the
+ * roles; as you scroll, an orange signal travels along it (GSAP
+ * ScrollTrigger, Lenis-synced) and each role "powers on" when the signal
+ * reaches its pad. A sticky readout on large screens shows the role the
+ * signal is at (or the one you're hovering).
+ *
+ * Unanimated state = finished state: every role is fully lit. The dimmed
+ * "standby" look only exists once the scroll scene is armed, and is never
+ * below readable contrast.
+ */
 export default function Experience() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [live, setLive] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
 
-  const experiences = [
-    {
-      id: 1,
-      title: "Software Engineer Intern",
-      company: "Amazon Web Services",
-      location: "Arlington, VA",
-      period: "Aug 2026 - Present",
-      type: "Current",
-      description: "Building on the Domain Name Services team, working on the DNS infrastructure that resolves traffic across AWS at global scale.",
-      achievements: [
-        "Joined the Domain Name Services team in Arlington, VA",
-        "Working on DNS infrastructure operating at global scale",
-        "Extending the authoritative and recursive DNS experience built at IBM"
-      ],
-      technologies: ["AWS", "DNS", "Distributed Systems", "Cloud Infrastructure"],
-      icon: <Cloud className="w-5 h-5" />
-    },
-    {
-      id: 2,
-      title: "Software Engineer Intern",
-      company: "IBM",
-      location: "Austin, TX",
-      period: "May 2026 - Aug 2026",
-      type: "Internship",
-      description: "Architected and optimized a recursive DNS platform serving 30 clients, then automated the provisioning pipeline behind IBM's Classic-to-VPC migration.",
-      achievements: [
-        "Architected a recursive DNS platform on DNSDist, Unbound, and SDNLB, scaling throughput 10× from 100K to 1M+ QPS with sub-1% loss across 30 clients, 2 DNSDist nodes, and 3 Unbound nodes",
-        "Increased DNSDist throughput 19% through multi-instance CPU pinning and end-to-end DNSDist, Unbound, Linux kernel, systemd, and network tuning",
-        "Built Python metrics exporters and customized Grafana/Osprey dashboards for platform observability",
-        "Developed Ansible automation that cut node provisioning from days to under 3 minutes for IBM's Classic-to-VPC migration"
-      ],
-      technologies: ["DNSDist", "Unbound", "SDNLB", "Ansible", "Python", "Grafana", "Linux"],
-      icon: <Server className="w-5 h-5" />
-    },
-    {
-      id: 3,
-      title: "Software Engineer Intern",
-      company: "National Institute of Standards and Technology",
-      location: "Gaithersburg, MD",
-      period: "May 2025 - Mar 2026",
-      type: "Internship",
-      description: "Engineered AI-driven metrology pipelines for scanning electron microscope (SEM) image processing, advancing precision measurement for semiconductor research.",
-      achievements: [
-        "Built AI-driven metrology pipelines with PyTorch, TensorFlow, and Scikit-Learn to process 1,000+ SEM images",
-        "Reduced scan points by 40% while improving image fidelity by 20%",
-        "Developed and fine-tuned a Denoising Diffusion Probabilistic Model (DDPM) for SEM image enhancement",
-        "Lowered measurement uncertainty by 50%, enhancing semiconductor measurement precision"
-      ],
-      technologies: ["PyTorch", "TensorFlow", "Scikit-Learn", "DDPM", "Computer Vision"],
-      icon: <Microscope className="w-5 h-5" />
-    },
-    {
-      id: 4,
-      title: "Founder & Lead Software Developer",
-      company: "RAGent LLC",
-      location: "Ellicott City, MD",
-      period: "Jan 2025 - Apr 2026",
-      type: "Founder",
-      description: "Founded an AI startup building Retrieval-Augmented Generation (RAG) systems for enterprise and education, leading a 20+ person organization.",
-      achievements: [
-        "Founded an AI startup generating $20K+ ARR across a 20+ employee organization",
-        "Architected RAG pipelines with llama-index, FastAPI, OpenAI API, and Weaviate for hybrid vector + keyword search and parallel document retrieval",
-        "Delivered an AI workflow for sustainED (McKinsey-backed) on AWS-native infrastructure — Terraform IaC, Aurora Serverless v2, and Bedrock Titan + Claude 3.5 Haiku",
-        "Translated and simplified 7,000+ restricted research documents, cutting review time 35% and improving accessibility for Southern African education ministries"
-      ],
-      technologies: ["llama-index", "FastAPI", "Weaviate", "Terraform", "AWS Bedrock", "Aurora Serverless"],
-      icon: <Rocket className="w-5 h-5" />
-    },
-    {
-      id: 5,
-      title: "Software Research Assistant",
-      company: "University of Maryland Institute for Advanced Computer Studies",
-      location: "College Park, MD",
-      period: "Aug 2024 - Present",
-      type: "Research",
-      description: "Building firmware and interactive systems for Calico, an ACM IMWUT-published miniature wearable robot for on-body interaction, actuation, and sensing.",
-      achievements: [
-        "Engineered C++ and Python firmware for an ESP32-S3 wearable robot with a touchscreen UI",
-        "Integrated an IMU sensor pipeline and WiFi communication stack with anatomical imagery display",
-        "Extended the ACM IMWUT-published Calico platform to support educational programming environments",
-        "Project featured in IEEE Spectrum and The Verge, demonstrated at CHI and UbiComp"
-      ],
-      technologies: ["C++", "Python", "ESP32-S3", "Embedded Systems", "IMU Sensors"],
-      icon: <Code className="w-5 h-5" />
-    },
-    {
-      id: 6,
-      title: "Software Engineer Intern",
-      company: "Aspire JHU APL",
-      location: "Johns Hopkins Applied Physics Laboratory",
-      period: "May 2023 - May 2024",
-      type: "Internship",
-      description: "Utilized Matlab, Python, and Github to develop a production-level application to track inventory. Led 10 intern developers throughout app development lifecycle.",
-      achievements: [
-        "Led team of 10 intern developers with meetings and deadlines",
-        "Developed production-level inventory tracking application",
-        "Presented findings to APL Air Missile Defense Sector administration",
-        "Surveyed employees for user preferences on SAILS app"
-      ],
-      technologies: ["MATLAB", "Python", "Github", "Team Leadership"],
-      icon: <Users className="w-5 h-5" />
-    },
-    {
-      id: 7,
-      title: "Junior Developer",
-      company: "Neuron-G",
-      location: "Remote",
-      period: "May 2022 - Sept 2022",
-      type: "Contract",
-      description: "Conducted research study to determine the extent of bias in Supreme Court cases using machine learning techniques and statistical analysis.",
-      achievements: [
-        "Used SKLearn's Random Forest to capture feature importance",
-        "Analyzed demographic variables including race, gender, and age",
-        "Contributed to bias detection research in judicial systems",
-        "Developed data analysis pipelines for legal research"
-      ],
-      technologies: ["SKLearn", "Random Forest", "Python", "Github", "Data Analysis"],
-      icon: <Award className="w-5 h-5" />
-    },
-    {
-      id: 8,
-      title: "Research and Development Intern",
-      company: "BlueWave Semiconductors",
-      location: "On-site",
-      period: "May 2020 - Aug 2022",
-      type: "Internship",
-      description: "Led implementation of automated remote monitoring systems for semiconductor manufacturing equipment, which proved especially valuable during the pandemic.",
-      achievements: [
-        "Implemented automated remote monitoring for CVD System",
-        "Automated Substrate heaters and Thermal Evaporator Deposition Systems",
-        "Used PLC circuitry programming and sensors for automation",
-        "Enabled remote depositions during pandemic restrictions"
-      ],
-      technologies: ["CVD", "PLC Programming", "Ladder Logic", "Industrial Automation"],
-      icon: <TrendingUp className="w-5 h-5" />
-    }
-  ];
+  const sceneRef = useGsapContext<HTMLDivElement>(({ gsap, ScrollTrigger }) => {
+    const scene = sceneRef.current;
+    const track = scene?.querySelector<HTMLElement>('.xp-track');
+    const fill = scene?.querySelector<HTMLElement>('.xp-fill');
+    const head = scene?.querySelector<HTMLElement>('.xp-head');
+    if (!scene || !track || !fill || !head) return undefined;
+
+    const entries = Array.from(scene.querySelectorAll<HTMLElement>('.xp-entry'));
+    let offsets: number[] = [];
+    let current = -2;
+
+    const measure = () => {
+      const top = track.getBoundingClientRect().top;
+      offsets = entries.map((entry) => {
+        const pad = entry.querySelector<HTMLElement>('.xp-pad') ?? entry;
+        const r = pad.getBoundingClientRect();
+        return r.top + r.height / 2 - top;
+      });
+    };
+    const apply = (progress: number) => {
+      const y = progress * track.offsetHeight;
+      let last = -1;
+      entries.forEach((entry, i) => {
+        const on = offsets[i] <= y + 1;
+        entry.classList.toggle('is-on', on);
+        if (on) last = i;
+      });
+      if (last !== current) {
+        current = last;
+        setLive(last);
+      }
+    };
+
+    scene.dataset.scene = 'armed';
+    const range = { trigger: track, start: 'top 62%', end: 'bottom 62%' };
+    gsap.fromTo(fill, { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { ...range, scrub: true } });
+    gsap.fromTo(
+      head,
+      { y: 0 },
+      {
+        y: () => track.offsetHeight,
+        ease: 'none',
+        scrollTrigger: { ...range, scrub: true, invalidateOnRefresh: true },
+      },
+    );
+    ScrollTrigger.create({
+      ...range,
+      onRefresh: (self) => {
+        measure();
+        apply(self.progress);
+      },
+      onUpdate: (self) => apply(self.progress),
+    });
+
+    return () => {
+      delete scene.dataset.scene;
+      entries.forEach((entry) => entry.classList.remove('is-on'));
+      setLive(null);
+    };
+  }, []);
+
+  // Readout: hovered role, else where the signal is, else the newest role.
+  const shown = hovered ?? (live !== null && live >= 0 ? live : 0);
+  const powered = live === null ? roles.length : live + 1;
 
   return (
-    <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="text-4xl md:text-5xl mb-4">Professional Experience</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            My journey through different roles, companies, and the impact I've made along the way
-          </p>
-        </motion.div>
+    <Section
+      id="experience"
+      index={3}
+      label="Experience"
+      title="Where I've worked"
+      intro="Eight roles over six-plus years, newest first: DNS at AWS and IBM, applied ML at NIST, a startup I founded, and wearable robotics research."
+      className="overflow-x-clip"
+    >
+      <div ref={sceneRef} className="xp-scene grid gap-12 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-16">
+        {/* Sticky readout (large screens) */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-28">
+            <Readout role={roles[shown]} index={shown} powered={powered} live={live !== null} />
+            <Stats className="mt-10" />
+          </div>
+        </aside>
+
+        {/* The trace */}
+        <div className="xp-track relative">
+          <div aria-hidden="true" className="absolute bottom-0 left-[11px] top-0 w-px bg-bp-line-soft/50" />
+          <div
+            aria-hidden="true"
+            className="xp-fill absolute bottom-0 left-[10px] top-0 hidden w-[3px] origin-top bg-bp-signal shadow-[0_0_14px_hsl(var(--bp-signal)/0.8)]"
+          />
+          <div
+            aria-hidden="true"
+            className="xp-head absolute -top-[7px] left-[4px] hidden h-[15px] w-[15px] rounded-full border-2 border-bp-signal bg-background shadow-[0_0_18px_4px_hsl(var(--bp-signal)/0.55)]"
+          >
+            <span className="absolute inset-[3px] rounded-full bg-bp-signal" />
+          </div>
+
+          <ol className="xp-list space-y-8 md:space-y-10">
+            {roles.map((role, i) => (
+              <Entry
+                key={role.ref}
+                role={role}
+                onEnter={() => setHovered(i)}
+                onLeave={() => setHovered((h) => (h === i ? null : h))}
+              />
+            ))}
+          </ol>
+
+          {/* Bus terminator */}
+          <div aria-hidden="true" className="mt-8 flex items-center gap-3 pl-[5px]">
+            <span className="h-[13px] w-[13px] border border-bp-line-soft" />
+            <span className="bp-label">End of trace / 2020</span>
+          </div>
+        </div>
+
+        <Stats className="lg:hidden" />
+      </div>
+    </Section>
+  );
+}
+
+function Entry({ role, onEnter, onLeave }: { role: Role; onEnter: () => void; onLeave: () => void }) {
+  return (
+    <li className="xp-entry group/xp relative pl-11 md:pl-16" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+      {/* Pad on the bus and the branch trace to the card */}
+      <span aria-hidden="true" className="xp-pad absolute left-0 top-7 flex h-[23px] w-[23px] items-center justify-center border border-bp-line bg-background">
+        <span className="xp-pad-core h-[9px] w-[9px] rounded-full bg-bp-line" />
+      </span>
+      <svg aria-hidden="true" className="absolute left-[23px] top-[26px] h-5 w-[21px] overflow-visible md:w-[41px]" preserveAspectRatio="none">
+        <path className="xp-branch hidden md:block" d="M0 12.5 H12 L20 4.5 H41" fill="none" strokeWidth={1} />
+        <path className="xp-branch md:hidden" d="M0 12.5 H21" fill="none" strokeWidth={1} />
+      </svg>
+
+      <article className="xp-card relative border border-bp-line-soft/40 bg-bp-panel/90 p-5 backdrop-blur-[2px] sm:p-7">
+        <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="xp-ref bp-label text-bp-line">{role.ref}</span>
+          <span className="bp-label text-bp-ink">{role.period}</span>
+          <span className="bp-label normal-case tracking-[0.04em]">{role.location}</span>
+          <TypeTag type={role.type} />
+        </header>
+
+        <h3 className="mt-4 font-display text-2xl font-medium leading-tight text-bp-ink sm:text-[1.75rem]">
+          {role.title}
+        </h3>
+        <p className="mt-1 text-base text-bp-line">{role.company}</p>
+
+        <p className="mt-4 max-w-[68ch] leading-relaxed text-bp-ink-dim">{role.description}</p>
+
+        <ul className="mt-5 max-w-[68ch] space-y-2.5">
+          {role.achievements.map((item) => (
+            <li key={item} className="flex gap-3 text-[0.9375rem] leading-relaxed text-bp-ink">
+              <span aria-hidden="true" className="mt-[0.6em] h-px w-3 shrink-0 bg-bp-line" />
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <p className="mt-6 border-t border-bp-line-soft/30 pt-4 font-mono text-xs leading-relaxed text-bp-line">
+          <span className="sr-only">Stack: </span>
+          {role.technologies.join(' / ')}
+        </p>
+      </article>
+    </li>
+  );
+}
+
+function TypeTag({ type }: { type: Role['type'] }) {
+  const current = type === 'Current';
+  return (
+    <span
+      className={cn(
+        'bp-label inline-flex items-center gap-1.5 border px-2 py-1',
+        current ? 'border-bp-signal/60 text-bp-signal-ink' : 'border-bp-line-soft/50',
+      )}
+    >
+      {current && (
+        <span aria-hidden="true" className="relative flex h-1.5 w-1.5">
+          <span className="absolute inset-0 animate-ping rounded-full bg-bp-signal/70 motion-reduce:hidden" />
+          <span className="relative h-1.5 w-1.5 rounded-full bg-bp-signal" />
+        </span>
+      )}
+      {type}
+    </span>
+  );
+}
+
+function Readout({ role, index, powered, live }: { role: Role; index: number; powered: number; live: boolean }) {
+  return (
+    <div aria-hidden="true" className="relative border border-bp-line-soft/40 bg-bp-panel/80 p-5">
+      <span className="bp-label absolute -top-[0.4rem] left-4 bg-background px-1.5 text-bp-line">Fig. 03 / Readout</span>
+
+      <div className="relative h-[4.5rem] overflow-hidden">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.div
+            key={role.year}
+            initial={{ y: '100%' }}
+            animate={{ y: '0%' }}
+            exit={{ y: '-100%' }}
+            transition={{ duration: 0.45, ease: EASE }}
+            className="font-display text-[4.25rem] font-semibold leading-none tracking-[-0.04em] text-bp-ink tabular-nums"
+          >
+            {role.year}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div className="relative">
-        {/* Timeline Line */}
-        <div className="absolute left-8 top-0 bottom-0 w-px bg-border hidden md:block" />
-
-        <div className="space-y-12">
-          {experiences.map((exp, index) => (
-            <motion.div
-              key={exp.id}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.1 * index }}
-              className="relative"
-            >
-              {/* Timeline Dot */}
-              <div className="absolute left-6 w-4 h-4 bg-primary rounded-full border-4 border-background shadow-lg hidden md:block" />
-              
-              <div className="md:ml-16">
-                <Card className="hover:shadow-lg transition-shadow duration-300">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <div className="bg-primary/10 p-2 rounded-lg mr-3 text-primary">
-                            {exp.icon}
-                          </div>
-                          <div>
-                            <h3 className="text-2xl mb-1">{exp.title}</h3>
-                            <p className="text-lg text-primary">{exp.company}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
-                          <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            {exp.period}
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {exp.location}
-                          </div>
-                          <Badge variant="secondary">{exp.type}</Badge>
-                        </div>
-                        
-                        <p className="text-muted-foreground leading-relaxed mb-6">
-                          {exp.description}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Achievements */}
-                      <div>
-                        <h4 className="mb-3 flex items-center">
-                          <Award className="w-4 h-4 mr-2 text-primary" />
-                          Key Achievements
-                        </h4>
-                        <ul className="space-y-2">
-                          {exp.achievements.map((achievement, i) => (
-                            <motion.li
-                              key={i}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={isInView ? { opacity: 1, x: 0 } : {}}
-                              transition={{ duration: 0.5, delay: 0.2 + (0.1 * i) }}
-                              className="flex items-start text-sm text-muted-foreground"
-                            >
-                              <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 mt-2 shrink-0" />
-                              {achievement}
-                            </motion.li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Technologies */}
-                      <div>
-                        <h4 className="mb-3 flex items-center">
-                          <Code className="w-4 h-4 mr-2 text-primary" />
-                          Technologies Used
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {exp.technologies.map((tech) => (
-                            <Badge key={tech} variant="outline" className="text-xs">
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      <div className="mt-3 flex items-center justify-between">
+        <span className="bp-label text-bp-line">
+          {role.ref} / {String(roles.length).padStart(2, '0')}
+        </span>
+        <span className={cn('bp-label', live && powered === 0 ? '' : 'text-bp-signal-ink')}>
+          {live && powered === 0 ? 'Standby' : 'Powered'}
+        </span>
       </div>
 
-      {/* Summary Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="mt-16 text-center"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
-          {[
-            { number: "6+", label: "Years Experience" },
-            { number: "8", label: "Professional Roles" },
-            { number: "30+", label: "Technologies" },
-            { number: "1", label: "Startup Founded" }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ scale: 0 }}
-              animate={isInView ? { scale: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.9 + (0.1 * index), type: "spring" }}
-            >
-              <div className="text-3xl text-primary mb-1">{stat.number}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+      {/* LED bar: one segment per role, lit as the signal reaches it */}
+      <div className="mt-3 grid grid-cols-8 gap-1">
+        {roles.map((r, i) => (
+          <span
+            key={r.ref}
+            className={cn(
+              'h-2 transition-colors duration-300',
+              i < powered ? 'bg-bp-signal' : 'bg-bp-line-soft/30',
+              i === index && 'outline outline-1 outline-offset-1 outline-bp-line',
+            )}
+          />
+        ))}
+      </div>
+
+      <div className="mt-5 border-t border-bp-line-soft/30 pt-4">
+        <p className="font-display text-lg leading-snug text-bp-ink">{role.short}</p>
+        <p className="mt-1 text-sm leading-snug text-bp-ink-dim">{role.title}</p>
+        <p className="bp-label mt-3 normal-case tracking-[0.04em]">{role.period}</p>
+      </div>
     </div>
+  );
+}
+
+function Stats({ className }: { className?: string }) {
+  return (
+    <dl className={cn('grid grid-cols-2 gap-px border border-bp-line-soft/40 bg-bp-line-soft/40', className)}>
+      {experienceStats.map((stat) => (
+        <div key={stat.label} className="flex flex-col-reverse gap-1 bg-background p-4">
+          <dt className="bp-label normal-case tracking-[0.04em]">{stat.label}</dt>
+          <dd className="font-display text-3xl font-medium leading-none text-bp-ink">{stat.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }

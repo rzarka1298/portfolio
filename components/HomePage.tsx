@@ -6,14 +6,16 @@ import Projects from './Projects';
 import Experience from './Experience';
 import Skills from './Skills';
 import Contact from './Contact';
+import Footer from './sections/Footer';
 import { scrollToId } from '../lib/motion/lenis';
 
 /**
  * The single-page site, rendered at `/`.
  *
  * Section ids are the nav, scroll-spy and hash-link targets; keep them.
- * About → Contact still use their pre-redesign components; each will move
- * onto `components/blueprint/Section` as it's rebuilt.
+ * Each section component renders its own blueprint `Section` with its id
+ * (about, experience, projects, skills, contact), so there are no wrapping
+ * `<section id>` elements here.
  */
 /** True once the hero has mostly scrolled out of view. */
 function usePastHero() {
@@ -30,9 +32,38 @@ function usePastHero() {
   return past;
 }
 
+/** True while the contact section is meaningfully in view. */
+function useContactVisible() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    let observer: IntersectionObserver | undefined;
+    let timer: number | undefined;
+    const attach = () => {
+      const el = document.getElementById('contact');
+      if (!el) {
+        timer = window.setTimeout(attach, 200);
+        return;
+      }
+      observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
+        rootMargin: '0px 0px -40% 0px',
+      });
+      observer.observe(el);
+    };
+    attach();
+    return () => {
+      window.clearTimeout(timer);
+      observer?.disconnect();
+    };
+  }, []);
+  return visible;
+}
+
 export default function HomePage() {
   // The hero already carries contact links; the floating CTA joins later.
-  const showCta = usePastHero();
+  // Hidden again once the contact sheet itself is on screen.
+  const pastHero = usePastHero();
+  const atContact = useContactVisible();
+  const showCta = pastHero && !atContact;
   return (
     <>
       <main id="main">
@@ -40,26 +71,17 @@ export default function HomePage() {
           <Hero />
         </section>
 
-        <section id="about" className="py-20 overflow-x-clip">
+        {/* Sheets 02-06. Each section renders its own blueprint <Section id>. */}
+        <div className="bp-sheet relative">
           <About />
-        </section>
-
-        <section id="experience" className="py-20 overflow-x-clip">
           <Experience />
-        </section>
-
-        <section id="projects" className="py-20">
           <Projects />
-        </section>
-
-        <section id="skills" className="py-20">
           <Skills />
-        </section>
-
-        <section id="contact" className="py-20 overflow-x-clip">
           <Contact />
-        </section>
+        </div>
       </main>
+
+      <Footer />
 
       {/* Floating CTA */}
       <AnimatePresence>

@@ -183,3 +183,104 @@ html.lenis body {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Sheets 02-06 (About, Experience, Skills, Contact, footer).
+   Additive only: no existing token or rule above is changed.
+   ========================================================================== */
+
+/* Faint drafting grid behind the sheets below the hero. Low contrast so body
+   copy stays readable straight on it. */
+.bp-sheet {
+  background-image:
+    linear-gradient(hsl(var(--bp-grid) / 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--bp-grid) / 0.35) 1px, transparent 1px);
+  background-size: 120px 120px;
+  background-position: center -1px;
+}
+
+/* Experience: signal trace. Default (no JS, reduced motion) = every role lit.
+   `data-scene="armed"` is set by the GSAP scene; `.is-on` marks powered roles. */
+.xp-branch {
+  stroke: hsl(var(--bp-line));
+  transition: stroke 0.35s ease;
+}
+.xp-pad,
+.xp-pad-core,
+.xp-card,
+.xp-ref {
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    background-color 0.35s ease,
+    box-shadow 0.35s ease,
+    color 0.35s ease;
+}
+[data-scene='armed'] .xp-fill,
+[data-scene='armed'] .xp-head {
+  display: block;
+}
+[data-scene='armed'] .xp-entry:not(.is-on) .xp-card {
+  opacity: 0.55;
+}
+[data-scene='armed'] .xp-entry:not(.is-on) .xp-pad {
+  border-color: hsl(var(--bp-line-soft) / 0.7);
+}
+[data-scene='armed'] .xp-entry:not(.is-on) .xp-pad-core {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px hsl(var(--bp-line-soft));
+}
+[data-scene='armed'] .xp-entry:not(.is-on) .xp-branch {
+  stroke: hsl(var(--bp-line-soft) / 0.7);
+  stroke-dasharray: 2 3;
+}
+.xp-entry.is-on .xp-pad {
+  border-color: hsl(var(--bp-signal));
+}
+.xp-entry.is-on .xp-pad-core {
+  background-color: hsl(var(--bp-signal));
+  box-shadow: 0 0 10px 1px hsl(var(--bp-signal) / 0.8);
+}
+.xp-entry.is-on .xp-branch {
+  stroke: hsl(var(--bp-signal));
+}
+.xp-entry.is-on .xp-card {
+  border-color: hsl(var(--bp-line) / 0.45);
+  animation: xp-power-on 0.5s steps(1, end) 1;
+}
+.xp-entry.is-on .xp-ref {
+  color: hsl(var(--bp-signal-ink));
+}
+@keyframes xp-power-on {
+  0% { opacity: 0.55; }
+  20% { opacity: 1; }
+  35% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+/* Hover: focus one role, dim the rest (pointer devices only). */
+@media (hover: hover) and (pointer: fine) {
+  .xp-list:hover > .xp-entry:not(:hover) .xp-card {
+    opacity: 0.4;
+  }
+  .xp-list > .xp-entry:hover .xp-card {
+    opacity: 1;
+    border-color: hsl(var(--bp-line) / 0.8);
+  }
+}
+
+/* Skills: chip package pin rows; light up on hover. */
+.bom-pins {
+  background-image: repeating-linear-gradient(
+    90deg,
+    hsl(var(--bp-line-soft)) 0 2px,
+    transparent 2px 10px
+  );
+  transition: filter 0.2s ease;
+}
+.bom-chip:hover .bom-pins {
+  background-image: repeating-linear-gradient(
+    90deg,
+    hsl(var(--bp-signal)) 0 2px,
+    transparent 2px 10px
+  );
+}
