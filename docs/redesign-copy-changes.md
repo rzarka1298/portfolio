@@ -220,3 +220,109 @@ New stats (value / label):
 | Portfolio Website | 8 / project pages from one typed content format; 1 / edge function for the whole backend |
 
 Tech chips are trimmed to the 4–6 headline technologies from each content file's tech stack. HarnessFlow, Claude Command Center, Lane-Optimize and BiasGPT also have small chip changes, for example vLLM removed and Gymnasium, Zod and launchd added.
+
+## Resume update (2026-10-15)
+
+Source of truth: `RugvedZarkar_Resume.pdf` (Oct 2026). Marketing-style
+copy was removed or replaced with plain facts. Blueprint figure/sheet labels
+and UI labels are unchanged.
+
+### Page metadata (`index.html`)
+
+| Where | Before | After |
+|---|---|---|
+| `<title>` | Rugved Zarkar - Portfolio | Rugved Zarkar |
+| `<meta name="description">` | Rugved Zarkar, software engineer at AWS. Systems that hold up in production: DNS infrastructure, AI agent orchestration, wearable robotics. | Rugved Zarkar: Computer Science at the University of Maryland, class of 2028. Software Engineer Intern at Amazon Web Services. |
+
+### Hero (`components/Hero.tsx`)
+
+| Where | Before | After |
+|---|---|---|
+| Role labels (above name) | ● Software Engineer @ AWS / CS @ Maryland | *(moved below the name)* |
+| Tagline | I build systems that hold up in production: DNS infrastructure at 1M+ QPS, AI agent orchestration and wearable robotics. | *(removed)*; mono lines "● SWE Intern @ AWS" and "CS @ UMD ’28" |
+| Figure caption | Fig. 01 Selected projects, wired to their builder. Select a node to open it below. | Fig. 01 Selected projects. Select one to open it below. |
+| Résumé link | /Zarkar_Rugved_Resume.pdf | /RugvedZarkar_Resume.pdf (new résumé) |
+
+### Hero nodes and showcase (`content/featured.ts`, `components/showcase/showcaseData.ts`, `content/projects/calico.ts`)
+
+| Where | Before | After |
+|---|---|---|
+| P-04 title (hero node, showcase tab) | Calico | Calico Smartlabs |
+| Calico page title | Calico · Smart Lab (UMD) | Calico Smartlabs |
+| P-04 result | ACM IMWUT published, featured in IEEE Spectrum | ACM IMWUT published, featured in IEEE Spectrum and The Verge (stated on the résumé) |
+| Claude Command Center summary ¶4 | …and a read-only Codex mirror. The Research, Skills and Knowledge tabs are still placeholders. | …and a read-only Codex mirror. (removed sentence contradicted the résumé's research/knowledge-graph claims) |
+
+### Projects (`components/Projects.tsx`)
+
+| Where | Before | After |
+|---|---|---|
+| Heading | Systems I've built | Projects |
+| Intro | Eight projects, each drawn as its architecture. Pick one to watch a request move through it, then open the case study. | *(removed)* |
+
+### About (`components/About.tsx`)
+
+| Where | Before | After |
+|---|---|---|
+| Heading | Between infrastructure and AI | About |
+| Bio | Three paragraphs (seam between infrastructure and AI; $20K+ ARR, 20+ person team; "a bias toward systems that hold up in production…"; HarnessFlow as "my open-source framework…") | Computer Science at the University of Maryland, College Park, class of 2028. Software Engineer Intern at Amazon Web Services in Arlington, VA. / Previously: Software Engineer Intern at IBM and NIST, founder of RAGent LLC, and Software Research Assistant at UMIACS since 2024. |
+| Note label | Note 1 / Now building | Note 1 / Current research |
+| Note | Interactive touchscreen technology for Calico, a miniature wearable robot that relocates around your body, senses your actions and gives real-time feedback. | C++/Python firmware for Calico, an ESP32-S3 wearable robot: touchscreen controls, a 20+ Hz IMU, Wi-Fi and real-time visualization. |
+| Photo callouts | UMD CS, Dec 2027 / SWE @ AWS | CS @ UMD ’28 / SWE Intern @ AWS |
+| D-01 | Infrastructure engineer: Scaling DNS and cloud platforms to 1M+ QPS at AWS and IBM | Infrastructure: DNS at IBM (100K to 1M+ QPS); Route 53 DNS Firewall at AWS |
+| D-02 | AI/ML engineer: Building RAG systems, diffusion models and agent orchestration | AI/ML: RAG platform at RAGent LLC; SEM image pipelines and diffusion models at NIST |
+| D-03 | Research assistant: Published wearable robotics work at ACM IMWUT with UMIACS | Research: Firmware for Calico, a wearable robot, at UMIACS |
+| D-04 | Founder: Bootstrapped an AI startup to $20K+ ARR and 20+ people | Founder: RAGent LLC, an 11-person team; assets acquired by sustainED |
+| Graduation | Expected December 2027 | Expected May 2028 |
+| Coursework | Advanced Data Structures, Machine Learning, Compilers, Computer Vision, Operating Systems, Database Systems, Algorithms, Object-Oriented Programming | Operating Systems, Computer Networks, Database Design, Algorithms, Advanced Data Structures |
+| Stats | 6+ years of experience / 8 professional roles / 30+ technologies used / 3.83 GPA | 5 professional roles / 9 languages / 2 AWS certifications / 3.83 GPA at UMD |
+
+### Experience (`components/Experience.tsx`, `components/sections/experienceData.ts`)
+
+| Where | Before | After |
+|---|---|---|
+| Heading | Where I've worked | Experience |
+| Intro | Eight roles over six-plus years, newest first: … | *(removed)* |
+| Roles | 8 (AWS, IBM, NIST, RAGent, UMIACS, JHU APL, Neuron-G, BlueWave) | 5, in résumé order: AWS, IBM, UMIACS, RAGent LLC, NIST. JHU APL, Neuron-G and BlueWave removed (not on the résumé) |
+| Role descriptions | One summary paragraph per role | *(removed; the résumé has bullets only)* |
+| AWS | Aug 2026 – Present; Domain Name Services team description; one bullet | Sep 2026 – Present; the résumé's four bullets (domain-classification API, PrivateLink design review, DNS Firewall analytics, ECS Fargate ingestion) |
+| IBM | Four bullets from the old résumé | The résumé's four bullets (10× to 1M+ QPS, +19% DNSDist throughput, exporters/dashboards, setup under 3 minutes) |
+| UMIACS | Four bullets | The résumé's two bullets (firmware with sub-100 ms latency; classrooms, CHI/UbiComp demos, IEEE Spectrum and The Verge) |
+| RAGent LLC | $20K+ ARR, 20+ employees, review time cut 35%, Southern African ministries | The résumé's three bullets: 350 users, 7,000+ documents, review time cut 75%, pilots in Ghana and Kenya; agentic RAG over a 150-node framework; 11-person team, assets acquired by sustainED, presented at the UN in Sept 2026 |
+| NIST | Four bullets (incl. image fidelity +20%, DDPM) | The résumé's two bullets (1,000+ SEM images, −40% scan points, −50% uncertainty; diffusion models evaluated with PSNR and SSIM) |
+| Stack lines | Old per-role lists | Technologies named in each role's bullets |
+| Stats | 6+ years / 8 roles / 30+ technologies / 1 startup | 5 roles / 3 SWE internships / 1 company founded / 2 AWS certifications |
+| Trace end | End of trace / 2020 | End of trace / 2024 (earliest start year) |
+
+### Skills (`components/Skills.tsx`)
+
+| Where | Before | After |
+|---|---|---|
+| Heading | Skills and technologies | Skills |
+| Intro | The parts I build with, grouped like a bill of materials. Pick a group to filter the library. | *(removed)* |
+| Groups | Languages, AI & Machine Learning, Cloud & Infrastructure, Web & Frameworks, Developer Tools, Certifications | The résumé's groups: Languages (LNG), Infrastructure & Cloud (INF), Backend & Frameworks (BE), Certifications (CRT), with the résumé's items. MATLAB, HuggingFace, FAISS, Supabase, Tailwind, Vite etc. and "Autodesk Fusion Certified" removed |
+
+### Contact (`components/Contact.tsx`)
+
+| Where | Before | After |
+|---|---|---|
+| Heading | Let's work together | Contact |
+| Intro | Have a project in mind? Send me a message, or email me directly. | *(removed)* |
+| Notes under contact block | I usually reply within 24 hours. / Ask me about my wearable robotics research. | *(removed)* |
+| Success toast | Message sent successfully! I'll get back to you soon. + Thank you for reaching out. I typically respond within 24 hours. | Message sent. |
+| Error toast | Failed to send message + Please try again or reach out via email directly. | Message not sent + Try again, or email rugvedzarkar@gmail.com. |
+| Résumé toast | Resume downloaded successfully! | Résumé downloaded. |
+| Message placeholder | Tell me about your project or idea... | Your message |
+| Résumé link | /Zarkar_Rugved_Resume.pdf | /RugvedZarkar_Resume.pdf |
+
+### Footer (`components/sections/Footer.tsx`)
+
+| Where | Before | After |
+|---|---|---|
+| Subtitle | Software engineer. Systems that hold up in production. | CS @ UMD ’28 / SWE Intern @ AWS |
+| Rev | B (Blueprint redesign) | C (Résumé update) |
+
+### Files
+
+`public/RugvedZarkar_Resume.pdf` added. `public/Zarkar_Rugved_Resume.pdf` and
+`src/Zarkar_Rugved_Resume.pdf` removed (nothing referenced them).
+`assets/Zarkar_Rugved_Resume.pdf` is untouched.

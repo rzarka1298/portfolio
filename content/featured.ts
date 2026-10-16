@@ -54,8 +54,8 @@ export const featuredProjects: FeaturedProject[] = [
   {
     id: 'calico',
     partNo: 'P-04',
-    title: 'Calico',
-    result: 'ACM IMWUT published, featured in IEEE Spectrum',
+    title: 'Calico Smartlabs',
+    result: 'ACM IMWUT published, featured in IEEE Spectrum and The Verge',
     stack: ['C++', 'ESP32-S3', 'IMU'],
   },
   {

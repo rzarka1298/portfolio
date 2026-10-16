@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Section, useGsapContext } from './blueprint';
 import { cn } from '../lib/utils';
-import { experienceStats, roles, type Role } from './sections/experienceData';
+import { experienceStats, firstYear, roles, type Role } from './sections/experienceData';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -91,8 +91,7 @@ export default function Experience() {
       id="experience"
       index={3}
       label="Experience"
-      title="Where I've worked"
-      intro="Eight roles over six-plus years, newest first: DNS at AWS and IBM, applied ML at NIST, a startup I founded, and wearable robotics research."
+      title="Experience"
       className="overflow-x-clip"
     >
       <div ref={sceneRef} className="xp-scene grid gap-12 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-16">
@@ -132,7 +131,7 @@ export default function Experience() {
           {/* Bus terminator */}
           <div aria-hidden="true" className="mt-8 flex items-center gap-3 pl-[5px]">
             <span className="h-[13px] w-[13px] border border-bp-line-soft" />
-            <span className="bp-label">End of trace / 2020</span>
+            <span className="bp-label">End of trace / {firstYear}</span>
           </div>
         </div>
 
@@ -166,8 +165,6 @@ function Entry({ role, onEnter, onLeave }: { role: Role; onEnter: () => void; on
           {role.title}
         </h3>
         <p className="mt-1 text-base text-bp-line">{role.company}</p>
-
-        <p className="mt-4 max-w-[68ch] leading-relaxed text-bp-ink-dim">{role.description}</p>
 
         <ul className="mt-5 max-w-[68ch] space-y-2.5">
           {role.achievements.map((item) => (
@@ -237,7 +234,7 @@ function Readout({ role, index, powered, live }: { role: Role; index: number; po
       </div>
 
       {/* LED bar: one segment per role, lit as the signal reaches it */}
-      <div className="mt-3 grid grid-cols-8 gap-1">
+      <div className="mt-3 grid gap-1" style={{ gridTemplateColumns: `repeat(${roles.length}, minmax(0, 1fr))` }}>
         {roles.map((r, i) => (
           <span
             key={r.ref}

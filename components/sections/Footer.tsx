@@ -2,7 +2,7 @@ import { scrollToId } from '../../lib/motion/lenis';
 import { CornerMarks } from '../blueprint';
 
 /** Drawing revision. Bump the letter and date when the site changes materially. */
-const REVISION = { rev: 'B', date: '2026-10-15', note: 'Blueprint redesign' };
+const REVISION = { rev: 'C', date: '2026-10-15', note: 'Résumé update' };
 
 /**
  * The page footer, drawn as a drawing's title block: who drew it, what
@@ -27,7 +27,7 @@ export default function Footer() {
               <div className="min-w-0">
                 <span className={key}>Title</span>
                 <p className="font-display text-lg leading-tight text-bp-ink">Rugved Zarkar, portfolio</p>
-                <p className="mt-1 text-sm text-bp-ink-dim">Software engineer. Systems that hold up in production.</p>
+                <p className="mt-1 font-mono text-xs text-bp-ink-dim">CS @ UMD &rsquo;28 / SWE Intern @ AWS</p>
               </div>
             </div>
 

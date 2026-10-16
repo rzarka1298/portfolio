@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowDownToLine, Check, Send } from 'lucide-react';
+import { ArrowDownToLine, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { trackVisit } from '../lib/analytics';
@@ -57,9 +57,7 @@ export default function Contact() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        toast.success("Message sent successfully! I'll get back to you soon.", {
-          description: 'Thank you for reaching out. I typically respond within 24 hours.',
-        });
+        toast.success('Message sent.');
 
         // Reset form
         setFormData({
@@ -75,8 +73,8 @@ export default function Contact() {
       }
     } catch (error) {
       console.error('Contact form error:', error);
-      toast.error('Failed to send message', {
-        description: 'Please try again or reach out via email directly.',
+      toast.error('Message not sent', {
+        description: 'Try again, or email rugvedzarkar@gmail.com.',
       });
     } finally {
       setIsSubmitting(false);
@@ -89,11 +87,11 @@ export default function Contact() {
 
     // Must be served from public/ — Vite does not serve the sibling assets/ directory
     const link = document.createElement('a');
-    link.href = '/Zarkar_Rugved_Resume.pdf';
+    link.href = '/RugvedZarkar_Resume.pdf';
     link.download = 'Rugved_Zarkar_Resume.pdf';
     link.click();
 
-    toast.success('Resume downloaded successfully!');
+    toast.success('Résumé downloaded.');
   };
 
   return (
@@ -101,8 +99,7 @@ export default function Contact() {
       id="contact"
       index={6}
       label="Contact"
-      title="Let's work together"
-      intro="Have a project in mind? Send me a message, or email me directly."
+      title="Contact"
       className="overflow-x-clip"
     >
       {/* Big CTA, fed by a signal wire */}
@@ -182,17 +179,6 @@ export default function Contact() {
               </div>
             </dl>
           </BlueprintFrame>
-
-          <ul className="mt-8 space-y-3 font-mono text-xs leading-relaxed text-bp-ink-dim">
-            <li className="flex gap-3">
-              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-bp-line" aria-hidden="true" />I usually reply within
-              24 hours.
-            </li>
-            <li className="flex gap-3">
-              <span aria-hidden="true" className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 bg-bp-signal" />
-              Ask me about my wearable robotics research.
-            </li>
-          </ul>
         </div>
 
         {/* Message form */}
@@ -246,7 +232,7 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 rows={5}
-                placeholder="Tell me about your project or idea..."
+                placeholder="Your message"
                 className={cn(inputClass, 'resize-none')}
               />
             </Field>

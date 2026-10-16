@@ -104,7 +104,7 @@ const ENTRIES: ShowcaseEntry[] = [
   {
     slug: 'calico',
     partNo: 'P-04',
-    name: 'Calico',
+    name: 'Calico Smartlabs',
     result: featuredResult('calico', 'ACM IMWUT published'),
     overview:
       'A miniature wearable robot from the UMD Small Artifacts Lab that relocates across the body on a track sewn into clothing. This version adds an ESP32-S3 with a round touchscreen and an IMU, programmed from a Blockly page in the browser over Wi-Fi. A team project.',

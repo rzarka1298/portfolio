@@ -1,7 +1,7 @@
 /**
- * Experience entries, newest first. Every fact here comes from the
- * pre-redesign `Experience.tsx`; copy edits are logged in
- * docs/redesign-copy-changes.md.
+ * Experience entries, in résumé order (RugvedZarkar_Resume.pdf, Oct 2026).
+ * Titles, locations, dates and bullets follow the résumé; copy edits are
+ * logged in docs/redesign-copy-changes.md.
  */
 export interface Role {
   /** Part number shown on the trace, e.g. "R-01". */
@@ -14,8 +14,7 @@ export interface Role {
   period: string;
   /** Start year, shown large in the readout. */
   year: string;
-  type: 'Current' | 'Internship' | 'Founder' | 'Research' | 'Contract';
-  description: string;
+  type: 'Current' | 'Internship' | 'Founder' | 'Research';
   achievements: string[];
   technologies: string[];
 }
@@ -27,13 +26,16 @@ export const roles: Role[] = [
     company: 'Amazon Web Services',
     short: 'AWS',
     location: 'Arlington, VA',
-    period: 'Aug 2026 – Present',
+    period: 'Sep 2026 – Present',
     year: '2026',
     type: 'Current',
-    description:
-      'On the Domain Name Services team, working on the DNS infrastructure that resolves traffic across AWS at global scale.',
-    achievements: ['Extending the authoritative and recursive DNS experience built at IBM'],
-    technologies: ['AWS', 'DNS', 'Distributed Systems', 'Cloud Infrastructure'],
+    achievements: [
+      'Developing a Go domain-classification API for AI tool calls, integrating Route 53 DNS Firewall and Bedrock AgentCore Policy with per-feature confidence scores, cache TTLs and TypeScript/CDK infrastructure',
+      'Consolidated API and PrivateLink designs across 4 teams; identified authentication conflicts and retry paths that could exceed a 50 ms policy timeout before implementation',
+      'Built Route 53 DNS Firewall and Profiles analytics in TypeScript, Python and Java across 36 AWS commercial regions, replacing 2–3 days of manual review with daily usage, growth, churn, cohort and payer-level metrics',
+      'Built ECS Fargate ingestion from 72 cross-account snapshots with IAM/STS and DynamoDB; added AWS CDK pipelines, integration tests and CloudWatch alarms with data isolation across commercial, GovCloud and China partitions',
+    ],
+    technologies: ['Go', 'TypeScript', 'Python', 'Java', 'Route 53', 'AWS CDK', 'ECS Fargate', 'DynamoDB', 'CloudWatch'],
   },
   {
     ref: 'R-02',
@@ -44,34 +46,28 @@ export const roles: Role[] = [
     period: 'May 2026 – Aug 2026',
     year: '2026',
     type: 'Internship',
-    description:
-      "Architected and tuned a recursive DNS platform serving 30 clients, then automated the provisioning pipeline behind IBM's Classic-to-VPC migration.",
     achievements: [
-      'Architected a recursive DNS platform on DNSDist, Unbound and SDNLB, scaling throughput 10× from 100K to 1M+ QPS with sub-1% loss across 30 clients, 2 DNSDist nodes and 3 Unbound nodes',
-      'Raised DNSDist throughput 19% through multi-instance CPU pinning and end-to-end DNSDist, Unbound, Linux kernel, systemd and network tuning',
-      'Built Python metrics exporters and customised Grafana/Osprey dashboards for platform observability',
-      "Wrote Ansible automation that cut node provisioning from days to under 3 minutes for IBM's Classic-to-VPC migration",
+      "Architected DNSDist/Unbound/SDNLB infrastructure for IBM's Classic-to-VPC migration, scaling throughput 10× from 100K to 1M+ QPS with sub-1% packet loss across 30 clients, 2 DNSDist nodes and 3 Unbound nodes",
+      'Raised DNSDist throughput 19% through CPU pinning, SO_REUSEPORT, kernel scheduling and network queue tuning',
+      'Built Python exporters and Grafana/Osprey dashboards for per-node DNS latency, health, packet loss, timeouts and throughput',
+      'Cut DNS node setup from days to under 3 minutes with Ansible/systemd provisioning, exporters and health checks',
     ],
-    technologies: ['DNSDist', 'Unbound', 'SDNLB', 'Ansible', 'Python', 'Grafana', 'Linux'],
+    technologies: ['DNSDist', 'Unbound', 'SDNLB', 'Python', 'Grafana', 'Ansible', 'systemd', 'Linux'],
   },
   {
     ref: 'R-03',
-    title: 'Software Engineer Intern',
-    company: 'National Institute of Standards and Technology',
-    short: 'NIST',
-    location: 'Gaithersburg, MD',
-    period: 'May 2025 – Mar 2026',
-    year: '2025',
-    type: 'Internship',
-    description:
-      'Built AI-driven metrology pipelines for scanning electron microscope (SEM) image processing, advancing precision measurement for semiconductor research.',
+    title: 'Software Research Assistant',
+    company: 'University of Maryland Institute for Advanced Computer Studies',
+    short: 'UMIACS',
+    location: 'College Park, MD',
+    period: 'Aug 2024 – Present',
+    year: '2024',
+    type: 'Research',
     achievements: [
-      'Built AI-driven metrology pipelines with PyTorch, TensorFlow and scikit-learn to process 1,000+ SEM images',
-      'Reduced scan points by 40% while improving image fidelity by 20%',
-      'Developed and fine-tuned a Denoising Diffusion Probabilistic Model (DDPM) for SEM image enhancement',
-      'Lowered measurement uncertainty by 50%, improving semiconductor measurement precision',
+      'Developing C++/Python firmware for Calico, an ESP32-S3 wearable robot, connecting touchscreen controls, a 20+ Hz IMU, Wi-Fi and real-time visualization while keeping touch-to-device command latency below 100 ms',
+      'Extended ACM IMWUT-published Calico for classrooms and CHI/UbiComp demos; featured in IEEE Spectrum and The Verge',
     ],
-    technologies: ['PyTorch', 'TensorFlow', 'Scikit-Learn', 'DDPM', 'Computer Vision'],
+    technologies: ['C++', 'Python', 'ESP32-S3', 'IMU', 'Wi-Fi'],
   },
   {
     ref: 'R-04',
@@ -82,96 +78,37 @@ export const roles: Role[] = [
     period: 'Jan 2025 – Apr 2026',
     year: '2025',
     type: 'Founder',
-    description:
-      'Founded an AI startup building retrieval-augmented generation (RAG) systems for enterprise and education, and led its 20+ person organization.',
     achievements: [
-      'Grew the startup to $20K+ ARR across a 20+ employee organization',
-      'Architected RAG pipelines with llama-index, FastAPI, the OpenAI API and Weaviate for hybrid vector + keyword search and parallel document retrieval',
-      'Delivered an AI workflow for sustainED (McKinsey-backed) on AWS-native infrastructure: Terraform IaC, Aurora Serverless v2, and Bedrock Titan + Claude 3.5 Haiku',
-      'Translated and simplified 7,000+ restricted research documents, cutting review time 35% and improving accessibility for Southern African education ministries',
+      'Built an AWS RAG platform for 350 registered users using Terraform, Aurora v2, Bedrock Titan and Claude 3.5 Haiku; processed 7,000+ restricted documents, cutting review time 75%, with government pilots in Ghana and Kenya',
+      'Built agentic RAG over a 150-node education framework and 1,000+ research sources to prioritize system improvements',
+      'Led an 11-person team; platform assets acquired by sustainED; technology presented at the UN in Sept 2026',
     ],
-    technologies: ['llama-index', 'FastAPI', 'Weaviate', 'Terraform', 'AWS Bedrock', 'Aurora Serverless'],
+    technologies: ['AWS', 'Terraform', 'Aurora v2', 'Bedrock Titan', 'Claude 3.5 Haiku', 'RAG'],
   },
   {
     ref: 'R-05',
-    title: 'Software Research Assistant',
-    company: 'University of Maryland Institute for Advanced Computer Studies',
-    short: 'UMIACS',
-    location: 'College Park, MD',
-    period: 'Aug 2024 – Present',
-    year: '2024',
-    type: 'Research',
-    description:
-      'Building firmware and interactive systems for Calico, an ACM IMWUT-published miniature wearable robot for on-body interaction, actuation and sensing.',
-    achievements: [
-      'Engineered C++ and Python firmware for an ESP32-S3 wearable robot with a touchscreen UI',
-      'Integrated an IMU sensor pipeline and WiFi communication stack with anatomical imagery display',
-      'Extended the ACM IMWUT-published Calico platform to support educational programming environments',
-      'Project featured in IEEE Spectrum and The Verge, demonstrated at CHI and UbiComp',
-    ],
-    technologies: ['C++', 'Python', 'ESP32-S3', 'Embedded Systems', 'IMU Sensors'],
-  },
-  {
-    ref: 'R-06',
     title: 'Software Engineer Intern',
-    company: 'Aspire JHU APL',
-    short: 'JHU APL',
-    location: 'Johns Hopkins Applied Physics Laboratory',
-    period: 'May 2023 – May 2024',
-    year: '2023',
+    company: 'National Institute of Standards and Technology',
+    short: 'NIST',
+    location: 'Gaithersburg, MD',
+    period: 'May 2025 – Mar 2026',
+    year: '2025',
     type: 'Internship',
-    description:
-      'Built a production-level inventory tracking application with MATLAB, Python and GitHub, leading 10 intern developers through the app development lifecycle.',
     achievements: [
-      'Led a team of 10 intern developers, running meetings and deadlines',
-      'Presented findings to APL Air Missile Defense Sector administration',
-      'Surveyed employees for user preferences on the SAILS app',
+      'Built PyTorch metrology pipelines for 1,000+ SEM images, cutting scan points 40% and measurement uncertainty 50%',
+      'Fine-tuned diffusion models for SEM restoration and evaluated reconstruction quality against baseline using PSNR and SSIM',
     ],
-    technologies: ['MATLAB', 'Python', 'Github', 'Team Leadership'],
-  },
-  {
-    ref: 'R-07',
-    title: 'Junior Developer',
-    company: 'Neuron-G',
-    short: 'Neuron-G',
-    location: 'Remote',
-    period: 'May 2022 – Sept 2022',
-    year: '2022',
-    type: 'Contract',
-    description:
-      'Studied the extent of bias in Supreme Court cases using machine learning and statistical analysis.',
-    achievements: [
-      "Used scikit-learn's Random Forest to capture feature importance",
-      'Analyzed demographic variables including race, gender and age',
-      'Contributed to bias detection research in judicial systems',
-      'Developed data analysis pipelines for legal research',
-    ],
-    technologies: ['SKLearn', 'Random Forest', 'Python', 'Github', 'Data Analysis'],
-  },
-  {
-    ref: 'R-08',
-    title: 'Research and Development Intern',
-    company: 'BlueWave Semiconductors',
-    short: 'BlueWave',
-    location: 'On-site',
-    period: 'May 2020 – Aug 2022',
-    year: '2020',
-    type: 'Internship',
-    description:
-      'Led automated remote monitoring for semiconductor manufacturing equipment, which proved especially valuable during the pandemic.',
-    achievements: [
-      'Implemented automated remote monitoring for the CVD system',
-      'Automated substrate heaters and thermal evaporator deposition systems',
-      'Used PLC circuitry programming and sensors for automation',
-      'Enabled remote depositions during pandemic restrictions',
-    ],
-    technologies: ['CVD', 'PLC Programming', 'Ladder Logic', 'Industrial Automation'],
+    technologies: ['PyTorch', 'Diffusion models', 'PSNR', 'SSIM'],
   },
 ];
 
+/** Every value is countable from the résumé. */
 export const experienceStats = [
-  { value: '6+', label: 'Years of experience' },
-  { value: '8', label: 'Professional roles' },
-  { value: '30+', label: 'Technologies' },
-  { value: '1', label: 'Startup founded' },
+  { value: '5', label: 'Roles' },
+  { value: '3', label: 'SWE internships' },
+  { value: '1', label: 'Company founded' },
+  { value: '2', label: 'AWS certifications' },
 ];
+
+/** Earliest start year on the trace. */
+export const firstYear = roles.reduce((min, r) => (r.year < min ? r.year : min), roles[0].year);

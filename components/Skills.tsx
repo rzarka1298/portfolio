@@ -10,36 +10,61 @@ interface Group {
   parts: string[];
 }
 
+/** Groups and order follow the résumé's Technical Skills section. */
 const groups: Group[] = [
   {
     code: 'LNG',
     name: 'Languages',
-    parts: ['Python', 'Java', 'TypeScript', 'JavaScript', 'Go', 'SQL', 'C', 'C++', 'MATLAB', 'HTML/CSS'],
-  },
-  {
-    code: 'ML',
-    name: 'AI & Machine Learning',
-    parts: ['PyTorch', 'TensorFlow', 'Scikit-Learn', 'HuggingFace', 'LangChain', 'llama-index', 'Weaviate', 'FAISS', 'Diffusion Models'],
+    parts: ['Python', 'Go', 'TypeScript', 'Java', 'JavaScript', 'SQL', 'C', 'C++', 'HTML/CSS'],
   },
   {
     code: 'INF',
-    name: 'Cloud & Infrastructure',
-    parts: ['AWS', 'Docker', 'Linux', 'Terraform', 'Ansible', 'Temporal', 'DNSDist', 'Unbound', 'Grafana'],
+    name: 'Infrastructure & Cloud',
+    parts: [
+      'AWS EC2',
+      'AWS ECS',
+      'AWS Lambda',
+      'DynamoDB',
+      'CloudWatch',
+      'S3',
+      'IAM',
+      'VPC',
+      'Route 53',
+      'Docker',
+      'Kubernetes',
+      'Terraform',
+      'Linux',
+      'Git',
+      'Bash',
+      'Ansible',
+      'Grafana',
+    ],
   },
   {
-    code: 'WEB',
-    name: 'Web & Frameworks',
-    parts: ['React.js', 'Node.js', 'FastAPI', 'Tailwind CSS', 'REST APIs', 'MySQL', 'Supabase'],
-  },
-  {
-    code: 'TL',
-    name: 'Developer Tools',
-    parts: ['Git', 'GitHub', 'Bash', 'OpenTelemetry', 'Vite', 'systemd'],
+    code: 'BE',
+    name: 'Backend & Frameworks',
+    parts: [
+      'REST APIs',
+      'PostgreSQL',
+      'MySQL',
+      'Aurora',
+      'FastAPI',
+      'Node.js',
+      'Temporal',
+      'OpenTelemetry',
+      'Weaviate',
+      'LlamaIndex',
+      'React',
+      'PyTorch',
+      'TensorFlow',
+      'Scikit-Learn',
+      'LangChain',
+    ],
   },
   {
     code: 'CRT',
     name: 'Certifications',
-    parts: ['AWS Certified Cloud Practitioner', 'AWS Solutions Architect', 'Autodesk Fusion Certified'],
+    parts: ['AWS Certified Cloud Practitioner', 'AWS Certified Solutions Architect'],
   },
 ];
 
@@ -70,8 +95,7 @@ export default function Skills() {
       id="skills"
       index={5}
       label="Skills"
-      title="Skills and technologies"
-      intro="The parts I build with, grouped like a bill of materials. Pick a group to filter the library."
+      title="Skills"
       className="overflow-x-clip"
     >
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-14">

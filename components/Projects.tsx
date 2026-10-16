@@ -234,11 +234,8 @@ function SectionHeading() {
         </span>
       </div>
       <DimensionedTitle id="projects-title" className="text-4xl font-medium leading-[1.05] lg:text-[2.75rem]">
-        Systems I&rsquo;ve built
+        Projects
       </DimensionedTitle>
-      <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-bp-ink-dim lg:text-sm">
-        Eight projects, each drawn as its architecture. Pick one to watch a request move through it, then open the case study.
-      </p>
     </header>
   );
 }

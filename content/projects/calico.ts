@@ -2,7 +2,7 @@ import type { ProjectPage } from './types';
 
 const x: ProjectPage = {
   slug: 'calico',
-  title: 'Calico · Smart Lab (UMD)',
+  title: 'Calico Smartlabs',
   tagline:
     'A miniature wearable robot that relocates across the body on an on-cloth track. This version adds an ESP32-S3 with a round touchscreen and IMU, driven from a browser over Wi-Fi.',
   status: 'Research lab project · ACM IMWUT (2022)',

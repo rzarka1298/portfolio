@@ -6,33 +6,24 @@ import PortfolioViews from './PortfolioViews';
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 const disciplines = [
-  { ref: 'D-01', title: 'Infrastructure engineer', text: 'Scaling DNS and cloud platforms to 1M+ QPS at AWS and IBM' },
-  { ref: 'D-02', title: 'AI/ML engineer', text: 'Building RAG systems, diffusion models and agent orchestration' },
-  { ref: 'D-03', title: 'Research assistant', text: 'Published wearable robotics work at ACM IMWUT with UMIACS' },
-  { ref: 'D-04', title: 'Founder', text: 'Bootstrapped an AI startup to $20K+ ARR and 20+ people' },
+  { ref: 'D-01', title: 'Infrastructure', text: 'DNS at IBM (100K to 1M+ QPS); Route 53 DNS Firewall at AWS' },
+  { ref: 'D-02', title: 'AI/ML', text: 'RAG platform at RAGent LLC; SEM image pipelines and diffusion models at NIST' },
+  { ref: 'D-03', title: 'Research', text: 'Firmware for Calico, a wearable robot, at UMIACS' },
+  { ref: 'D-04', title: 'Founder', text: 'RAGent LLC, an 11-person team; assets acquired by sustainED' },
 ];
 
 const education = {
   school: 'University of Maryland, College Park',
   degree: 'Bachelor of Science in Computer Science',
-  graduation: 'Expected December 2027',
+  graduation: 'Expected May 2028',
   gpa: '3.83 / 4.00',
-  coursework: [
-    'Advanced Data Structures',
-    'Machine Learning',
-    'Compilers',
-    'Computer Vision',
-    'Operating Systems',
-    'Database Systems',
-    'Algorithms',
-    'Object-Oriented Programming',
-  ],
+  coursework: ['Operating Systems', 'Computer Networks', 'Database Design', 'Algorithms', 'Advanced Data Structures'],
 };
 
 const stats = [
-  { value: '6+', label: 'Years of experience' },
-  { value: '8', label: 'Professional roles' },
-  { value: '30+', label: 'Technologies used' },
+  { value: '5', label: 'Professional roles' },
+  { value: '9', label: 'Languages' },
+  { value: '2', label: 'AWS certifications' },
   { value: '3.83', label: 'GPA at UMD' },
 ];
 
@@ -51,7 +42,7 @@ export default function About() {
       id="about"
       index={2}
       label="About"
-      title="Between infrastructure and AI"
+      title="About"
       className="overflow-x-clip"
     >
       <div ref={ref} className="grid gap-12 lg:grid-cols-12 lg:gap-14">
@@ -61,29 +52,22 @@ export default function About() {
         <div className="lg:col-span-7 lg:pt-8">
           <div className="space-y-5 bg-background/90 text-lg leading-relaxed text-bp-ink lg:py-2">
             <p>
-              I'm a Computer Science student at the University of Maryland, working at the seam between infrastructure
-              and AI. At IBM I architected a recursive DNS platform and scaled it 10× to over 1M QPS. Now I'm on the
-              Domain Name Services team at AWS, working on DNS at global scale.
+              Computer Science at the University of Maryland, College Park, class of 2028. Software Engineer Intern at
+              Amazon Web Services in Arlington, VA.
             </p>
             <p className="text-bp-ink-dim">
-              On the AI side, I've built RAG pipelines for Southern African education ministries, fine-tuned diffusion
-              models for semiconductor metrology at NIST, and founded RAGent LLC, which grew to $20K+ ARR and a 20+
-              person team. I also do wearable robotics research at UMIACS on Calico, published at ACM IMWUT.
-            </p>
-            <p className="text-bp-ink-dim">
-              What ties it together is a bias toward systems that hold up in production: measured, observable and
-              reliable. That's the idea behind HarnessFlow, my open-source framework for compiling AI agent pipelines
-              into deterministic workflows.
+              Previously: Software Engineer Intern at IBM and NIST, founder of RAGent LLC, and Software Research
+              Assistant at UMIACS since 2024.
             </p>
           </div>
 
           <aside className="relative mt-10 border border-dashed border-bp-signal/50 bg-bp-panel/70 p-5 sm:p-6">
             <span className="bp-label absolute -top-[0.4rem] left-4 bg-background px-1.5 text-bp-signal-ink">
-              Note 1 / Now building
+              Note 1 / Current research
             </span>
             <p className="leading-relaxed text-bp-ink">
-              Interactive touchscreen technology for Calico, a miniature wearable robot that relocates around your body,
-              senses your actions and gives real-time feedback.
+              C++/Python firmware for Calico, an ESP32-S3 wearable robot: touchscreen controls, a 20+ Hz IMU, Wi-Fi and
+              real-time visualization.
             </p>
           </aside>
         </div>
@@ -147,10 +131,10 @@ function Portrait({ inView }: { inView: boolean }) {
           </div>
           <CornerMarks size={12} className="text-bp-line" />
           <Annotation x="63%" y="20%" dx={34} dy={-34} shelf={18} className="hidden sm:block">
-            UMD CS, Dec 2027
+            CS @ UMD &rsquo;28
           </Annotation>
           <Annotation x="46%" y="74%" dx={60} dy={28} shelf={18} tone="signal" className="hidden sm:block">
-            SWE @ AWS
+            SWE Intern @ AWS
           </Annotation>
         </div>
       </div>

@@ -12,7 +12,7 @@ import MagneticButton from './blueprint/MagneticButton';
 import SignalEdge from './blueprint/SignalEdge';
 import { DimensionedTitle } from './blueprint/Section';
 
-const RESUME_URL = '/Zarkar_Rugved_Resume.pdf';
+const RESUME_URL = '/RugvedZarkar_Resume.pdf';
 
 /**
  * Hero: "FIG. 01", a live system drawing. The name is the origin node,
@@ -95,14 +95,7 @@ export default function Hero() {
             <CornerMarks size={12} className="text-bp-line" />
             <span className="bp-label absolute -top-[0.4rem] left-5 bg-bp-bg px-1.5 text-bp-line">00 / Origin</span>
 
-            <p className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs uppercase tracking-[0.1em] text-bp-ink-dim">
-              <span>
-                <span className="text-bp-signal-ink">●</span> Software Engineer @ AWS
-              </span>
-              <span>CS @ Maryland</span>
-            </p>
-
-            <div className="mt-5">
+            <div>
               <DimensionedTitle
                 as="h1"
                 className="text-[clamp(3.25rem,13vw,4.5rem)] font-semibold leading-[0.92] tracking-[-0.035em] lg:text-[clamp(4.5rem,7vw,6.75rem)]"
@@ -111,10 +104,12 @@ export default function Hero() {
               </DimensionedTitle>
             </div>
 
-            <p className="mt-6 max-w-[34ch] text-lg leading-relaxed text-bp-ink sm:text-xl">
-              I build systems that hold up in production: DNS infrastructure at 1M+ QPS, AI agent orchestration and
-              wearable robotics.
-            </p>
+            <ul className="mt-6 space-y-1.5 font-mono text-sm uppercase tracking-[0.1em] text-bp-ink sm:text-base">
+              <li>
+                <span aria-hidden="true" className="text-bp-signal-ink">●</span> SWE Intern @ AWS
+              </li>
+              <li>CS @ UMD &rsquo;28</li>
+            </ul>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticButton
@@ -199,8 +194,8 @@ export default function Hero() {
         {/* Footer row */}
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <p className="bp-label max-w-md normal-case leading-relaxed tracking-[0.04em]">
-            <span className="uppercase tracking-[0.12em] text-bp-line">Fig. 01</span> Selected projects, wired to their
-            builder. Select a node to open it below.
+            <span className="uppercase tracking-[0.12em] text-bp-line">Fig. 01</span> Selected projects. Select one to
+            open it below.
           </p>
           <a
             href="#about"
