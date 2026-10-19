@@ -20,6 +20,7 @@ export type DemoComponent = LazyExoticComponent<ComponentType<DemoProps>>;
 export const demoRegistry: Record<string, DemoComponent> = {
   'harnessflow-run': lazy(() => import('./harnessflow/HarnessFlowReplay')),
   'claudeos-dashboard': lazy(() => import('./claudeos/CommandCenterMock')),
+  'lane-optimize-replay': lazy(() => import('./laneoptimize/LaneOptimizeReplay')),
 };
 
 export function getDemo(demoId: string | undefined): DemoComponent | undefined {

@@ -310,6 +310,7 @@ const x: ProjectPage = {
     ],
   },
   links: { github: 'https://github.com/rzarka1298/Lane-Optimize' },
+  demoId: 'lane-optimize-replay',
 };
 
 export default x;
