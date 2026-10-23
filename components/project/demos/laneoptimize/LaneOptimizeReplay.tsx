@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import HighwayCanvas, { CANVAS_HEIGHT } from './HighwayCanvas';
+import RaceCanvas, { RACE_LOADING_HEIGHT } from './RaceCanvas';
 import {
   ACTION_LABEL,
   DRIVER_NOTE,
@@ -91,12 +91,9 @@ export default function LaneOptimizeReplay() {
   // The reset to 0 on a scenario switch lands one render late; never index past the new race.
   const tick = Math.min(rawTick, lastTick);
   const changes = useMemo(() => (run ? laneChangeTicks(run) : []), [run]);
-  const ghosts = useMemo(
-    () =>
-      (scenario?.drivers ?? [])
-        .filter((d) => d.agent !== run?.agent)
-        .map((d) => ({ tag: DRIVER_TAG[d.agent] ?? d.label, run: d })),
-    [scenario, run],
+  const rows = useMemo(
+    () => (scenario?.drivers ?? []).map((d) => ({ agent: d.agent, tag: DRIVER_TAG[d.agent] ?? d.label, run: d })),
+    [scenario],
   );
 
   useEffect(() => {
@@ -117,7 +114,7 @@ export default function LaneOptimizeReplay() {
   }, []);
 
   // Start the race from the top whenever the scenario changes. Switching the
-  // followed driver keeps the clock, so you can hop between cars mid-race.
+  // selected driver keeps the clock, so you can hop between cars mid-race.
   useEffect(() => {
     seek(0);
   }, [scenario, seek]);
@@ -202,9 +199,9 @@ export default function LaneOptimizeReplay() {
           <span className="text-[11px] text-bp-ink-dim">Same traffic seed, six drivers, one clock</span>
         </div>
         <p className="text-sm text-bp-ink-dim">
-          Each driver ran the same seed on its own, recorded tick by tick from the project&apos;s simulator. Here the runs
-          are replayed side by side like ghost cars in a racing game: the filled car is the one you follow, and the
-          outlines are where every other driver was at the same moment. Nothing is simulating live.
+          Each driver ran the same seed on its own, recorded tick by tick from the project&apos;s simulator. The runs are
+          replayed together on one clock: one road per driver, each with the traffic that driver actually met, and a
+          strip on top showing where everyone is on the 1 km road. Nothing is simulating live.
         </p>
       </div>
 
@@ -234,20 +231,20 @@ export default function LaneOptimizeReplay() {
       {error ? (
         <p className="border border-bp-line/30 p-6 text-sm text-bp-ink-dim">This scenario couldn&apos;t be loaded.</p>
       ) : !scenario || !run ? (
-        <div className="grid place-items-center border border-bp-line/30" style={{ height: CANVAS_HEIGHT + 120 }}>
+        <div className="grid place-items-center border border-bp-line/30" style={{ height: RACE_LOADING_HEIGHT + 30 }}>
           <span className="bp-label animate-pulse text-bp-line">Loading recording</span>
         </div>
       ) : (
         <>
           {/* Road */}
           <div className="relative border border-bp-line/40">
-            <HighwayCanvas
-              run={run}
+            <RaceCanvas
+              rows={rows}
+              selected={run.agent}
               roadM={scenario.roadM}
               posRef={posRef}
-              tag={DRIVER_TAG[run.agent] ?? run.label}
-              ghosts={ghosts}
-              label={`Top-down highway: following ${run.label} on ${meta.title}, with the other drivers shown as outlines`}
+              onSelect={setAgent}
+              label={`Top-down highways, one per driver, on ${meta.title}; ${run.label} is highlighted`}
             />
             <div aria-live="polite" className="pointer-events-none absolute right-2 top-2">
               {runDone && (
@@ -257,9 +254,8 @@ export default function LaneOptimizeReplay() {
               )}
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-bp-line/30 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-bp-ink-dim">
-              <Legend swatch="bg-bp-signal" label="Followed driver" />
-              <Legend swatch="border border-dashed border-bp-ink" label="Other drivers" />
-              <Legend swatch="bg-bp-ink/70" label="Traffic" />
+              <Legend swatch="bg-bp-signal" label="Policy-driven car" />
+              <Legend swatch="bg-bp-ink/60" label="Traffic" />
               <Legend swatch="bg-[hsl(185_70%_45%)]" label="Slow" />
               <Legend swatch="bg-[hsl(350_85%_64%)]" label="Aggressive" />
             </div>
@@ -325,11 +321,11 @@ export default function LaneOptimizeReplay() {
             </div>
           </div>
           <p className="text-[11px] text-bp-ink-dim">
-            Orange marks on the timeline are the followed driver&apos;s lane changes.
+            Orange marks on the timeline are the selected driver&apos;s lane changes. Click a road to select its driver.
           </p>
 
           <div className="grid gap-3 lg:grid-cols-[1fr_1.1fr]">
-            {/* Followed driver */}
+            {/* Selected driver */}
             <div className="grid grid-cols-2 content-start gap-px border border-bp-line/30 bg-bp-line/20">
               <Stat label="Race clock" value={`${(tick / TICKS_PER_S).toFixed(1)} s`} />
               <Stat label="Distance" value={ego ? `${ego.x.toFixed(0)} m` : `${scenario.roadM} m`} />
@@ -349,9 +345,9 @@ export default function LaneOptimizeReplay() {
             {/* Standings, which double as the driver picker */}
             <div className="border border-bp-line/30">
               <div className="flex items-baseline justify-between border-b border-bp-line/30 px-3 py-2">
-                <span className="bp-label text-bp-ink-dim">Standings · pick a car to follow</span>
+                <span className="bp-label text-bp-ink-dim">Standings · pick a driver</span>
               </div>
-              <ol role="radiogroup" aria-label="Driver to follow">
+              <ol role="radiogroup" aria-label="Driver">
                 {standings.map((s, rank) => {
                   const on = s.run.agent === run.agent;
                   const behind = s.done ? s.run.durationS - winner : null;
