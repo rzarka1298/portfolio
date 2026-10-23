@@ -28,7 +28,7 @@ ALL = ["random", "greedy", "safe_rule", "dqn_v4_mixed_200k_obsfix", "ppo_v12_saf
 SCENARIOS = {
     "high_s13": ("high", 13, ALL),
     "high_s7": ("high", 7, ALL),
-    "gauntlet_s9": ("gauntlet", 9, ALL),
+    "gauntlet_s14": ("gauntlet", 14, ALL),
 }
 
 for sid, (density, seed, agents) in SCENARIOS.items():

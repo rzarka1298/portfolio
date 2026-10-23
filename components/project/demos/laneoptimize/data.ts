@@ -6,7 +6,7 @@
  * diverges only once the ego's own moves change what the cars around it do.
  */
 
-export type ScenarioId = 'high_s13' | 'high_s7' | 'gauntlet_s9';
+export type ScenarioId = 'high_s13' | 'high_s7' | 'gauntlet_s14';
 
 /** Index into `Action` labels: 0 stay, 1 change left, 2 change right, -1 no decision. */
 export type ActionCode = -1 | 0 | 1 | 2;
@@ -55,7 +55,7 @@ export const SCENARIOS: ScenarioMeta[] = [
     tab: 'Dense · seed 13',
     title: 'High density, seed 13',
     blurb:
-      'DQN and PPO move into the right lane straight away and finish in 31.1 s. Greedy weaves back and forth and takes 34.6 s. The rule-based driver stays in the middle, and the gauntlet-trained PPO goes left; both finish 6 s behind.',
+      'DQN and PPO move into the right lane straight away and finish in 31.1 s. Greedy weaves back and forth 17 times and takes 33.6 s. The rule-based driver stays in the middle and the gauntlet-trained PPO goes left; both finish 6 s behind.',
     defaultAgent: 'ppo_v12_safety_cd_150k',
   },
   {
@@ -63,15 +63,15 @@ export const SCENARIOS: ScenarioMeta[] = [
     tab: 'Dense · seed 7',
     title: 'High density, seed 7',
     blurb:
-      'Here a learned policy loses. Four drivers move into the left lane straight away and finish in 27.0 s. DQN moves right instead, gets stuck behind slower traffic and finishes 10 s behind them.',
+      'Here a learned policy loses. Four drivers move into the left lane straight away and finish in 29.2 s. DQN moves right instead, gets stuck behind slower traffic and finishes 8 s behind them.',
     defaultAgent: 'dqn_v4_mixed_200k_obsfix',
   },
   {
-    id: 'gauntlet_s9',
-    tab: 'Gauntlet · seed 9',
-    title: 'Gauntlet, seed 9',
+    id: 'gauntlet_s14',
+    tab: 'Gauntlet · seed 14',
+    title: 'Gauntlet, seed 14',
     blurb:
-      'The ego starts in the right lane behind a wall of slow cars. The gauntlet-trained PPO and greedy move two lanes left within 2 s and finish in 23.6 s. The standard PPO, DQN and the rule-based driver never leave the slow lane and arrive 8 s later.',
+      'The ego starts in the right lane behind a wall of slow cars. Greedy and both PPOs move two lanes left within 2 s and finish in 29.2 s. The rule-based driver and DQN only move one lane, stay in the middle traffic and arrive 3.5 s later.',
     defaultAgent: 'ppo_v10_gauntlet_cd_300k',
   },
 ];
@@ -79,7 +79,7 @@ export const SCENARIOS: ScenarioMeta[] = [
 const loaders: Record<ScenarioId, () => Promise<{ default: unknown }>> = {
   high_s13: () => import('./scenarios/high_s13.json'),
   high_s7: () => import('./scenarios/high_s7.json'),
-  gauntlet_s9: () => import('./scenarios/gauntlet_s9.json'),
+  gauntlet_s14: () => import('./scenarios/gauntlet_s14.json'),
 };
 
 const cache = new Map<ScenarioId, Promise<Scenario>>();
