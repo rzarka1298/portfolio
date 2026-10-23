@@ -4,9 +4,8 @@ import { cn } from '@/lib/utils';
 import HighwayCanvas, { CANVAS_HEIGHT } from './HighwayCanvas';
 import {
   ACTION_LABEL,
-  ACTION_TEXT,
   DRIVER_NOTE,
-  REWARD_LABEL,
+  DRIVER_TAG,
   SCENARIOS,
   loadScenario,
   type ActionCode,
@@ -32,37 +31,43 @@ function prefersReducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function outcomeText(d: DriverRun) {
-  return d.outcome === 'collision' ? `Crashed at ${d.durationS.toFixed(1)} s` : `Finished in ${d.durationS.toFixed(1)} s`;
-}
-
-/** Per-tick derived series for one run: cumulative reward per component and ego readouts. */
-function useRunSeries(run: DriverRun | undefined, keys: string[]) {
-  return useMemo(() => {
-    if (!run) return null;
-    const n = run.t.length;
-    const cum: number[][] = [];
-    const acc = keys.map(() => 0);
-    for (let i = 0; i < n; i++) {
-      run.r[i].forEach((x, k) => {
-        acc[k] += x;
-      });
-      cum.push([...acc]);
-    }
-    // One scale for every term so bar lengths compare across terms.
-    const maxAbs = Math.max(1e-6, ...cum.flatMap((row) => row.map(Math.abs)));
-    const changes: { i: number; a: ActionCode }[] = [];
-    run.a.forEach((a, i) => {
-      if (a === 1 || a === 2) changes.push({ i, a });
-    });
-    return { n, cum, maxAbs, changes };
-  }, [run, keys]);
-}
-
 function egoAt(run: DriverRun, i: number) {
   const row = run.v[i];
   if (row && row.length && row[4] === 0) return { x: row[1], lane: row[2], speed: row[3] };
   return null;
+}
+
+/** Ticks where the ego's lane index actually changed (SUMO can refuse a requested change). */
+function laneChangeTicks(run: DriverRun) {
+  const out: number[] = [];
+  let prev = -1;
+  run.v.forEach((row, i) => {
+    if (!row.length || row[4] !== 0) return;
+    if (prev !== -1 && row[2] !== prev) out.push(i);
+    prev = row[2];
+  });
+  return out;
+}
+
+interface Standing {
+  run: DriverRun;
+  done: boolean;
+  x: number;
+}
+
+/** Where every driver is at tick i: finished drivers by finish time, the rest by distance. */
+function standingsAt(drivers: DriverRun[], i: number): Standing[] {
+  return drivers
+    .map((run) => {
+      const done = i >= run.v.length - 1;
+      const ego = egoAt(run, Math.min(i, run.v.length - 1));
+      return { run, done, x: ego ? ego.x : 0 };
+    })
+    .sort((a, b) => {
+      if (a.done && b.done) return a.run.durationS - b.run.durationS;
+      if (a.done !== b.done) return a.done ? -1 : 1;
+      return b.x - a.x;
+    });
 }
 
 export default function LaneOptimizeReplay() {
@@ -81,10 +86,18 @@ export default function LaneOptimizeReplay() {
 
   const meta = SCENARIOS.find((s) => s.id === scenarioId)!;
   const run = scenario?.drivers.find((d) => d.agent === agent) ?? scenario?.drivers[0];
-  const series = useRunSeries(run, scenario?.rewardKeys ?? []);
-  const lastTick = (series?.n ?? 1) - 1;
-  // The reset to 0 on a driver/scenario switch lands one render late; never index past the new run.
+  // One clock for the whole race: it runs until the slowest driver finishes.
+  const lastTick = scenario ? Math.max(...scenario.drivers.map((d) => d.v.length)) - 1 : 0;
+  // The reset to 0 on a scenario switch lands one render late; never index past the new race.
   const tick = Math.min(rawTick, lastTick);
+  const changes = useMemo(() => (run ? laneChangeTicks(run) : []), [run]);
+  const ghosts = useMemo(
+    () =>
+      (scenario?.drivers ?? [])
+        .filter((d) => d.agent !== run?.agent)
+        .map((d) => ({ tag: DRIVER_TAG[d.agent] ?? d.label, run: d })),
+    [scenario, run],
+  );
 
   useEffect(() => {
     let alive = true;
@@ -103,10 +116,11 @@ export default function LaneOptimizeReplay() {
     setTick(Math.floor(i));
   }, []);
 
-  // Start a run from the top whenever the scenario or driver changes.
+  // Start the race from the top whenever the scenario changes. Switching the
+  // followed driver keeps the clock, so you can hop between cars mid-race.
   useEffect(() => {
     seek(0);
-  }, [scenario, agent, seek]);
+  }, [scenario, seek]);
 
   // Autoplay once, the first time the demo scrolls into view.
   useEffect(() => {
@@ -127,7 +141,7 @@ export default function LaneOptimizeReplay() {
   }, [scenario]);
 
   useEffect(() => {
-    if (!playing || !series) return undefined;
+    if (!playing || !scenario) return undefined;
     let raf = 0;
     let last = performance.now();
     const step = (now: number) => {
@@ -144,7 +158,7 @@ export default function LaneOptimizeReplay() {
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [playing, series, lastTick]);
+  }, [playing, scenario, lastTick]);
 
   const atEnd = tick >= lastTick;
   const togglePlay = () => {
@@ -160,10 +174,6 @@ export default function LaneOptimizeReplay() {
     setAgent(SCENARIOS.find((s) => s.id === id)!.defaultAgent);
     setPlaying(!prefersReducedMotion());
   };
-  const pickDriver = (a: string) => {
-    setAgent(a);
-    setPlaying(true);
-  };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const tag = (e.target as HTMLElement).tagName;
@@ -174,12 +184,13 @@ export default function LaneOptimizeReplay() {
     }
   };
 
-  const ego = run ? egoAt(run, tick) : null;
-  const action: ActionCode = run ? run.a[tick] ?? -1 : -1;
-  const cumNow = series?.cum[tick];
-  const ret = cumNow ? cumNow.reduce((s, x) => s + x, 0) : 0;
-  const crashed = !!run && atEnd && run.outcome === 'collision';
-  const finished = !!run && atEnd && run.outcome === 'finished';
+  const runTick = run ? Math.min(tick, run.v.length - 1) : 0;
+  const runDone = !!run && tick >= run.v.length - 1;
+  const ego = run && !runDone ? egoAt(run, runTick) : null;
+  const action: ActionCode = run && !runDone ? run.a[runTick] ?? -1 : -1;
+  const standings = scenario ? standingsAt(scenario.drivers, tick) : [];
+  const leaderX = standings.find((s) => !s.done)?.x ?? 0;
+  const winner = scenario ? Math.min(...scenario.drivers.map((d) => d.durationS)) : 0;
 
   return (
     <div ref={rootRef} className="min-w-0 space-y-4" onKeyDown={onKeyDown}>
@@ -188,11 +199,12 @@ export default function LaneOptimizeReplay() {
           <span className="border border-bp-line/50 bg-bp-line/10 px-2.5 py-0.5 text-[11px] font-medium text-bp-line">
             Recorded SUMO episodes · real checkpoints
           </span>
-          <span className="text-[11px] text-bp-ink-dim">Same traffic seed, different driver</span>
+          <span className="text-[11px] text-bp-ink-dim">Same traffic seed, six drivers, one clock</span>
         </div>
         <p className="text-sm text-bp-ink-dim">
-          Each run was recorded tick by tick from the project&apos;s simulator with the evaluated checkpoints, then
-          replayed here. Nothing is simulating live. Pick a scenario, then a driver.
+          Each driver ran the same seed on its own, recorded tick by tick from the project&apos;s simulator. Here the runs
+          are replayed side by side like ghost cars in a racing game: the filled car is the one you follow, and the
+          outlines are where every other driver was at the same moment. Nothing is simulating live.
         </p>
       </div>
 
@@ -221,69 +233,33 @@ export default function LaneOptimizeReplay() {
 
       {error ? (
         <p className="border border-bp-line/30 p-6 text-sm text-bp-ink-dim">This scenario couldn&apos;t be loaded.</p>
-      ) : !scenario || !run || !series ? (
+      ) : !scenario || !run ? (
         <div className="grid place-items-center border border-bp-line/30" style={{ height: CANVAS_HEIGHT + 120 }}>
           <span className="bp-label animate-pulse text-bp-line">Loading recording</span>
         </div>
       ) : (
         <>
-          {/* Driver picker */}
-          <div role="radiogroup" aria-label="Driver" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-            {scenario.drivers.map((d) => {
-              const on = d.agent === run.agent;
-              return (
-                <button
-                  key={d.agent}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => pickDriver(d.agent)}
-                  className={cn(
-                    'border p-2.5 text-left transition-colors',
-                    on ? 'border-bp-signal bg-bp-panel' : 'border-bp-line/30 hover:border-bp-line',
-                    focusRing,
-                  )}
-                >
-                  <span className="block text-sm font-medium text-bp-ink">{d.label}</span>
-                  <span
-                    className={cn(
-                      'mt-1 block font-mono text-[11px]',
-                      d.outcome === 'collision' ? 'text-[hsl(350_85%_64%)]' : 'text-bp-line',
-                    )}
-                  >
-                    {outcomeText(d)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-bp-ink-dim">
-            <span className="font-mono text-bp-ink">{run.agent}</span> · {DRIVER_NOTE[run.agent]}
-          </p>
-
           {/* Road */}
           <div className="relative border border-bp-line/40">
             <HighwayCanvas
               run={run}
               roadM={scenario.roadM}
               posRef={posRef}
-              label={`Top-down highway: ${run.label} driving the ${meta.title} scenario`}
+              tag={DRIVER_TAG[run.agent] ?? run.label}
+              ghosts={ghosts}
+              label={`Top-down highway: following ${run.label} on ${meta.title}, with the other drivers shown as outlines`}
             />
             <div aria-live="polite" className="pointer-events-none absolute right-2 top-2">
-              {crashed && (
-                <span className="border border-[hsl(350_85%_64%)] bg-bp-bg/90 px-2 py-0.5 font-mono text-[11px] uppercase text-[hsl(350_85%_64%)]">
-                  Collision · episode over
-                </span>
-              )}
-              {finished && (
+              {runDone && (
                 <span className="border border-bp-line bg-bp-bg/90 px-2 py-0.5 font-mono text-[11px] uppercase text-bp-line">
-                  Reached the end of the road
+                  {run.label} finished · {run.durationS.toFixed(1)} s
                 </span>
               )}
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-bp-line/30 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-bp-ink-dim">
-              <Legend swatch="bg-bp-signal" label="Ego (policy-driven)" />
-              <Legend swatch="bg-bp-ink/70" label="Normal" />
+              <Legend swatch="bg-bp-signal" label="Followed driver" />
+              <Legend swatch="border border-dashed border-bp-ink" label="Other drivers" />
+              <Legend swatch="bg-bp-ink/70" label="Traffic" />
               <Legend swatch="bg-[hsl(185_70%_45%)]" label="Slow" />
               <Legend swatch="bg-[hsl(350_85%_64%)]" label="Aggressive" />
             </div>
@@ -306,11 +282,11 @@ export default function LaneOptimizeReplay() {
             </button>
             <div className="relative min-w-[10rem] flex-1">
               <div aria-hidden className="pointer-events-none absolute inset-x-0 top-1/2 h-3 -translate-y-1/2">
-                {series.changes.map((c) => (
+                {changes.map((i) => (
                   <span
-                    key={c.i}
+                    key={i}
                     className="absolute top-0 h-3 w-px bg-bp-signal/70"
-                    style={{ left: `${(c.i / Math.max(1, lastTick)) * 100}%` }}
+                    style={{ left: `${(i / Math.max(1, lastTick)) * 100}%` }}
                   />
                 ))}
               </div>
@@ -325,7 +301,7 @@ export default function LaneOptimizeReplay() {
                   seek(Number(e.target.value));
                 }}
                 aria-label="Replay position"
-                aria-valuetext={`${run.t[tick].toFixed(1)} seconds`}
+                aria-valuetext={`${(tick / TICKS_PER_S).toFixed(1)} seconds`}
                 className={cn('relative w-full accent-[hsl(var(--bp-signal))]', focusRing)}
               />
             </div>
@@ -348,89 +324,109 @@ export default function LaneOptimizeReplay() {
               ))}
             </div>
           </div>
-          <p className="text-[11px] text-bp-ink-dim">Orange marks on the timeline are lane changes.</p>
+          <p className="text-[11px] text-bp-ink-dim">
+            Orange marks on the timeline are the followed driver&apos;s lane changes.
+          </p>
 
-          {/* Readouts */}
-          <div className="grid gap-3 lg:grid-cols-[1.1fr_1fr]">
-            <div className="grid grid-cols-2 gap-px border border-bp-line/30 bg-bp-line/20 sm:grid-cols-4">
-              <Stat label="Sim time" value={`${run.t[tick].toFixed(1)} s`} />
-              <Stat label="Ego speed" value={ego ? `${(ego.speed * 3.6).toFixed(0)} km/h` : '—'} />
-              <Stat label="Lane" value={ego ? LANE_NAME[ego.lane] : '—'} />
-              <Stat label="Return" value={ret.toFixed(1)} />
-              <div className="col-span-2 bg-bp-bg p-3 sm:col-span-4">
-                <span className="bp-label text-bp-ink-dim">Decision</span>
-                <p className="mt-1 font-mono text-sm text-bp-signal-ink">{ACTION_LABEL[action]}</p>
-                <p className="text-xs text-bp-ink-dim">{ACTION_TEXT[action]}</p>
+          <div className="grid gap-3 lg:grid-cols-[1fr_1.1fr]">
+            {/* Followed driver */}
+            <div className="grid grid-cols-2 content-start gap-px border border-bp-line/30 bg-bp-line/20">
+              <Stat label="Race clock" value={`${(tick / TICKS_PER_S).toFixed(1)} s`} />
+              <Stat label="Distance" value={ego ? `${ego.x.toFixed(0)} m` : `${scenario.roadM} m`} />
+              <Stat label="Speed" value={ego ? `${(ego.speed * 3.6).toFixed(0)} km/h` : '—'} />
+              <Stat label="Lane" value={ego ? LANE_NAME[Math.round(ego.lane)] : '—'} />
+              <div className="col-span-2 bg-bp-bg p-3">
+                <span className="bp-label text-bp-ink-dim">Policy output</span>
+                <p className="mt-1 font-mono text-sm text-bp-signal-ink">
+                  {runDone ? 'FINISHED' : ACTION_LABEL[action]}
+                </p>
+                <p className="text-xs text-bp-ink-dim">
+                  <span className="font-mono text-bp-ink">{run.agent}</span> · {DRIVER_NOTE[run.agent]}
+                </p>
               </div>
             </div>
-            <div className="border border-bp-line/30 p-3">
-              <span className="bp-label text-bp-ink-dim">Reward so far, by term</span>
-              <ul className="mt-2 space-y-1.5">
-                {scenario.rewardKeys.map((k, ki) => {
-                  const val = cumNow?.[ki] ?? 0;
-                  const w = Math.min(50, (Math.abs(val) / series.maxAbs) * 50);
+
+            {/* Standings, which double as the driver picker */}
+            <div className="border border-bp-line/30">
+              <div className="flex items-baseline justify-between border-b border-bp-line/30 px-3 py-2">
+                <span className="bp-label text-bp-ink-dim">Standings · pick a car to follow</span>
+              </div>
+              <ol role="radiogroup" aria-label="Driver to follow">
+                {standings.map((s, rank) => {
+                  const on = s.run.agent === run.agent;
+                  const behind = s.done ? s.run.durationS - winner : null;
                   return (
-                    <li key={k} className="grid grid-cols-[6.5rem_1fr_3.5rem] items-center gap-2 text-xs">
-                      <span className="text-bp-ink-dim">{REWARD_LABEL[k] ?? k}</span>
-                      <span className="relative h-2 bg-bp-line/10">
-                        <span className="absolute inset-y-0 left-1/2 w-px bg-bp-line/40" />
-                        <span
-                          className={cn('absolute inset-y-0', val >= 0 ? 'left-1/2 bg-bp-line' : 'right-1/2 bg-bp-signal')}
-                          style={{ width: `${w}%` }}
-                        />
-                      </span>
-                      <span className="text-right font-mono tabular-nums text-bp-ink">{val.toFixed(1)}</span>
+                    <li key={s.run.agent}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => setAgent(s.run.agent)}
+                        className={cn(
+                          'grid w-full grid-cols-[1.5rem_1fr_auto] items-center gap-2 border-l-2 px-3 py-1.5 text-left text-xs',
+                          on ? 'border-bp-signal bg-bp-panel' : 'border-transparent hover:bg-bp-panel/60',
+                          focusRing,
+                        )}
+                      >
+                        <span className="font-mono text-bp-ink-dim">{rank + 1}</span>
+                        <span className={cn('text-sm', on ? 'text-bp-ink' : 'text-bp-ink-dim')}>{s.run.label}</span>
+                        <span className="font-mono tabular-nums text-bp-ink">
+                          {s.done
+                            ? `${s.run.durationS.toFixed(1)} s${behind && behind > 0.05 ? ` (+${behind.toFixed(1)})` : ''}`
+                            : `${s.x.toFixed(0)} m${leaderX - s.x >= 1 ? ` (−${(leaderX - s.x).toFixed(0)})` : ''}`}
+                        </span>
+                      </button>
                     </li>
                   );
                 })}
-              </ul>
+              </ol>
             </div>
           </div>
 
-          {/* All drivers in this scenario */}
+          {/* Final results */}
           <div className="overflow-x-auto border border-bp-line/30">
-            <table className="w-full min-w-[34rem] text-left text-xs">
-              <caption className="sr-only">Every driver on {meta.title}</caption>
+            <table className="w-full min-w-[30rem] text-left text-xs">
+              <caption className="sr-only">Final results for every driver on {meta.title}</caption>
               <thead className="font-mono uppercase tracking-[0.08em] text-bp-ink-dim">
                 <tr className="border-b border-bp-line/30">
                   <th className="px-3 py-2 font-normal">Driver</th>
-                  <th className="px-3 py-2 font-normal">Outcome</th>
+                  <th className="px-3 py-2 text-right font-normal">Time to 1 km</th>
                   <th className="px-3 py-2 text-right font-normal">Mean speed</th>
                   <th className="px-3 py-2 text-right font-normal">Lane changes</th>
-                  <th className="px-3 py-2 text-right font-normal">Return</th>
                 </tr>
               </thead>
               <tbody>
-                {scenario.drivers.map((d) => (
-                  <tr
-                    key={d.agent}
-                    className={cn('border-b border-bp-line/15 last:border-0', d.agent === run.agent && 'bg-bp-panel')}
-                  >
-                    <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => pickDriver(d.agent)}
-                        className={cn('text-left text-bp-ink underline-offset-2 hover:underline', focusRing)}
-                      >
-                        {d.label}
-                      </button>
-                    </td>
-                    <td className={cn('px-3 py-2', d.outcome === 'collision' ? 'text-[hsl(350_85%_64%)]' : 'text-bp-line')}>
-                      {outcomeText(d)}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{(d.meanSpeed * 3.6).toFixed(0)} km/h</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{d.laneChanges}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{d.return.toFixed(1)}</td>
-                  </tr>
-                ))}
+                {[...scenario.drivers]
+                  .sort((a, b) => a.durationS - b.durationS)
+                  .map((d) => (
+                    <tr
+                      key={d.agent}
+                      className={cn('border-b border-bp-line/15 last:border-0', d.agent === run.agent && 'bg-bp-panel')}
+                    >
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => setAgent(d.agent)}
+                          className={cn('text-left text-bp-ink underline-offset-2 hover:underline', focusRing)}
+                        >
+                          {d.label}
+                        </button>
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono tabular-nums">
+                        {d.outcome === 'collision' ? `crashed at ${d.durationS.toFixed(1)} s` : `${d.durationS.toFixed(1)} s`}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono tabular-nums">{(d.meanSpeed * 3.6).toFixed(0)} km/h</td>
+                      <td className="px-3 py-2 text-right font-mono tabular-nums">{d.laneChanges}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
           <p className="text-[11px] leading-relaxed text-bp-ink-dim">
-            One seed per scenario, chosen to show the drivers diverging. Across the full 20-seed matrix the rule-based
-            driver had no collisions at any density; the PPO crashed in 5% / 5% / 15% of low, medium and high-density
-            episodes. Recorded with{' '}
-            <code className="font-mono">scripts/record_replay.py</code>; time counts from when the ego joins the road.
+            One seed per scenario, chosen because the drivers&apos; choices change the result. Lane changes go through
+            SUMO&apos;s gap check (lane-change mode 768), so a request that would cut into another car is refused and
+            the ego holds its lane. Recorded with <code className="font-mono">scripts/record_replay.py</code>; the clock
+            starts when the ego joins the road.
           </p>
         </>
       )}

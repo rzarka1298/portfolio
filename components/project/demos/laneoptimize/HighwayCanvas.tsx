@@ -6,7 +6,7 @@ import type { DriverRun } from './data';
 // project's own dashboard). Lane 0 is the rightmost lane, drawn at the bottom.
 const N_LANES = 3;
 const PX_PER_M = 3;
-const LANE_PX = 30;
+const LANE_PX = 34;
 const ROAD_TOP = 22;
 const ROAD_BOTTOM = 8;
 const CAR_LEN_M = 5;
@@ -26,6 +26,7 @@ interface Palette {
   normal: string;
   slow: string;
   aggressive: string;
+  ghost: string;
 }
 
 function readPalette(): Palette {
@@ -42,6 +43,7 @@ function readPalette(): Palette {
     // Fixed teal: --bp-line is navy on paper and would match the normal cars.
     slow: 'hsl(185 70% 45%)',
     aggressive: 'hsl(350 85% 64%)',
+    ghost: v('--bp-ink'),
   };
 }
 
@@ -80,6 +82,26 @@ function carsAt(run: DriverRun, pos: number): { cars: Car[]; ego: Car | null } {
   return { cars, ego };
 }
 
+/** One driver's ego at fractional tick `pos`, or null once it has left the road. */
+function egoAt(run: DriverRun, pos: number): Car | null {
+  const last = run.v.length - 1;
+  if (pos > last) return null;
+  const i = Math.max(0, Math.floor(pos));
+  const a = run.v[i];
+  if (!a || !a.length || a[4] !== 0) return null;
+  const b = run.v[Math.min(last, i + 1)];
+  const f = pos - i;
+  if (!b || !b.length || b[4] !== 0 || b[0] !== a[0]) return { x: a[1], lane: a[2], vtype: 0 };
+  const ease = f * f * (3 - 2 * f);
+  return { x: a[1] + (b[1] - a[1]) * f, lane: a[2] + (b[2] - a[2]) * ease, vtype: 0 };
+}
+
+export interface Ghost {
+  /** Short on-road label, e.g. "DQN". */
+  tag: string;
+  run: DriverRun;
+}
+
 /** Last ego x at or before tick i (the ego leaves the road when it finishes). */
 function egoXBefore(run: DriverRun, i: number): number {
   for (let k = Math.min(i, run.v.length - 1); k >= 0; k--) {
@@ -95,13 +117,21 @@ interface Props {
   /** Fractional tick index; read every frame. */
   posRef: React.MutableRefObject<number>;
   label: string;
+  /** Tag drawn over the followed car. */
+  tag: string;
+  /** The other drivers on the same seed, drawn as outlines at the same moment. */
+  ghosts: Ghost[];
 }
 
-export default function HighwayCanvas({ run, roadM, posRef, label }: Props) {
+export default function HighwayCanvas({ run, roadM, posRef, label, tag, ghosts }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const runRef = useRef(run);
   runRef.current = run;
+  const ghostsRef = useRef(ghosts);
+  ghostsRef.current = ghosts;
+  const tagRef = useRef(tag);
+  tagRef.current = tag;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -139,8 +169,8 @@ export default function HighwayCanvas({ run, roadM, posRef, label }: Props) {
     const draw = (now: number) => {
       const r = runRef.current;
       const pos = posRef.current;
-      const { cars, ego } = carsAt(r, pos);
-      const egoX = ego ? ego.x : egoXBefore(r, Math.floor(pos));
+      const { cars, ego } = carsAt(r, Math.min(pos, r.v.length - 1));
+      const egoX = ego && pos <= r.v.length - 1 ? ego.x : egoXBefore(r, Math.floor(pos));
       const camX = egoX - (width * EGO_ANCHOR) / PX_PER_M;
       const sx = (x: number) => (x - camX) * PX_PER_M;
       const laneY = (lane: number) => ROAD_TOP + (N_LANES - 1 - lane) * LANE_PX + LANE_PX / 2;
@@ -207,7 +237,7 @@ export default function HighwayCanvas({ run, roadM, posRef, label }: Props) {
       }
 
       const atEnd = Math.floor(pos) >= r.v.length - 1;
-      if (ego) {
+      if (ego && pos <= r.v.length - 1) {
         const x = sx(ego.x);
         const y = laneY(ego.lane);
         ctx.fillStyle = palette.ego;
@@ -226,6 +256,84 @@ export default function HighwayCanvas({ run, roadM, posRef, label }: Props) {
           ctx.lineWidth = 1;
         }
       }
+
+      // Other drivers on the same seed. Identical runs share one outline and one label.
+      const focusOnRoad = !!ego && pos <= r.v.length - 1;
+      const groups: { car: Car; tags: string[] }[] = [];
+      const focusTags = [tagRef.current];
+      for (const g of ghostsRef.current) {
+        const car = egoAt(g.run, pos);
+        if (!car) continue;
+        if (focusOnRoad && ego && Math.abs(car.x - ego.x) < 0.6 && Math.abs(car.lane - ego.lane) < 0.1) {
+          focusTags.push(g.tag);
+          continue;
+        }
+        const same = groups.find((o) => Math.abs(o.car.x - car.x) < 0.6 && Math.abs(o.car.lane - car.lane) < 0.1);
+        if (same) same.tags.push(g.tag);
+        else groups.push({ car, tags: [g.tag] });
+      }
+      ctx.font = '9px "JetBrains Mono", ui-monospace, monospace';
+      ctx.textBaseline = 'bottom';
+      // Place each tag above its car, else below it, else drop it; never overlap another tag.
+      const placed: { x0: number; x1: number; y: number }[] = [];
+      const place = (text: string, carX: number, carY: number): number | null => {
+        const w = ctx.measureText(text).width;
+        for (const y of [carY - CAR_H / 2 - 3, carY + CAR_H / 2 + 10]) {
+          const box = { x0: carX - len, x1: carX - len + w, y };
+          if (!placed.some((o) => o.y === box.y && box.x0 < o.x1 + 4 && o.x0 < box.x1 + 4)) {
+            placed.push(box);
+            return y;
+          }
+        }
+        return null;
+      };
+      if (focusOnRoad && ego) {
+        const text = focusTags.join(' · ');
+        const y = place(text, sx(ego.x), laneY(ego.lane));
+        if (y !== null) {
+          ctx.fillStyle = palette.ego;
+          ctx.fillText(text, sx(ego.x) - len, y);
+        }
+      }
+      const leftEdge: { y: number; text: string }[] = [];
+      const rightEdge: { y: number; text: string }[] = [];
+      for (const { car, tags } of groups) {
+        const x = sx(car.x);
+        const y = laneY(car.lane);
+        const text = tags.join(' · ');
+        const dm = Math.round(car.x - egoX);
+        if (x < 0) leftEdge.push({ y, text: `◀ ${text} ${dm} m` });
+        else if (x - len > width) rightEdge.push({ y, text: `${text} +${dm} m ▶` });
+        else {
+          ctx.strokeStyle = palette.ghost;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([3, 2]);
+          ctx.strokeRect(x - len + 0.75, y - CAR_H / 2 + 0.75, len - 1.5, CAR_H - 1.5);
+          ctx.setLineDash([]);
+          ctx.lineWidth = 1;
+          const ty = place(text, x, y);
+          if (ty !== null) {
+            ctx.fillStyle = palette.ghost;
+            ctx.fillText(text, x - len, ty);
+          }
+        }
+      }
+      const edgeLabel = (items: { y: number; text: string }[], right: boolean) => {
+        items.sort((a, b) => a.y - b.y);
+        let prev = -Infinity;
+        for (const it of items) {
+          const y = Math.max(it.y + 4, prev + 11);
+          prev = y;
+          const w = ctx.measureText(it.text).width;
+          const x = right ? width - w - 4 : 4;
+          ctx.fillStyle = palette.road;
+          ctx.fillRect(x - 2, y - 10, w + 4, 11);
+          ctx.fillStyle = palette.ghost;
+          ctx.fillText(it.text, x, y);
+        }
+      };
+      edgeLabel(leftEdge, false);
+      edgeLabel(rightEdge, true);
 
       raf = requestAnimationFrame(draw);
     };

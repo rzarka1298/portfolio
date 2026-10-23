@@ -24,11 +24,11 @@ DRIVERS = {
     "ppo_v12_safety_cd_150k": "PPO",
     "ppo_v10_gauntlet_cd_300k": "PPO (gauntlet-trained)",
 }
-DENSE = ["random", "greedy", "safe_rule", "dqn_v4_mixed_200k_obsfix", "ppo_v12_safety_cd_150k"]
+ALL = ["random", "greedy", "safe_rule", "dqn_v4_mixed_200k_obsfix", "ppo_v12_safety_cd_150k", "ppo_v10_gauntlet_cd_300k"]
 SCENARIOS = {
-    "high_s0": ("high", 0, DENSE),
-    "high_s14": ("high", 14, DENSE),
-    "gauntlet_s6": ("gauntlet", 6, ["greedy", "safe_rule", "ppo_v12_safety_cd_150k", "ppo_v10_gauntlet_cd_300k"]),
+    "high_s13": ("high", 13, ALL),
+    "high_s7": ("high", 7, ALL),
+    "gauntlet_s9": ("gauntlet", 9, ALL),
 }
 
 for sid, (density, seed, agents) in SCENARIOS.items():
@@ -58,7 +58,13 @@ for sid, (density, seed, agents) in SCENARIOS.items():
             v.append(flat)
         last = ticks[-1]
         collided = last["info"].get("collision", 0) < 0
-        lane_changes = sum(1 for x in a if x in (1, 2))
+        # Count moves the ego actually made: with a safety-checked controller
+        # SUMO can refuse a requested change, so actions overcount.
+        # The first recorded tick is already after step 1, so start from the
+        # env's spawn lane (LaneIQEnv: lane 1, or lane 0 on the gauntlet).
+        spawn_lane = 0 if density == "gauntlet" else 1
+        ego_lanes = [spawn_lane] + [veh["lane"] for tick in ticks for veh in tick["vehicles"] if veh["is_ego"]]
+        lane_changes = sum(1 for p, q in zip(ego_lanes, ego_lanes[1:]) if p != q)
         ego_speeds = [veh["speed"] for tick in ticks for veh in tick["vehicles"] if veh["is_ego"]]
         drivers.append({
             "agent": agent,
