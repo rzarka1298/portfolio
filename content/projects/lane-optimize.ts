@@ -41,8 +41,8 @@ const x: ProjectPage = {
       body: 'Before the gap check, every TraCI lane change was carried out unchecked, and every collision in the results was one: the ego changing lanes into a car directly alongside it. Tested in SUMO with a car beside the ego, modes 0 and 1024 execute the change and crash; 256, 512 and 768 refuse it. The old code called 1024 “safety-checked”, which turned out to be wrong. With the check on, every agent has 0% collisions at every density over 20 seeds, and the comparison becomes who gets through traffic fastest.',
     },
     {
-      title: 'PPO is fastest, by about a second',
-      body: 'Over 20 seeds per density, the canonical PPO (`ppo_v12_safety_cd_150k`) finishes 1 km in 29.4 / 30.1 / 30.6 s at low / medium / high density, against 31.4–32.4 s for every other driver at high density. The rule-based driver makes the fewest lane changes (1.5 per minute on high); random makes 12.3 with no collisions, because SUMO refuses its unsafe requests. On the gauntlet, which floods the ego’s starting lane with slow cars, every agent averages 30.4–30.6 s: once unsafe merges are blocked, escaping is easy.',
+      title: 'In heavy traffic, PPO is about a second faster',
+      body: 'Paired over the same 20 seeds, the canonical PPO (`ppo_v12_safety_cd_150k`) drives 1 km in dense traffic about a second faster than the rule-based driver (0.97 s, 95% CI 0.14–1.81 s) and greedy (0.81 s, 0.16–1.46 s), and 1.8 s faster than random. Against DQN the 1.0 s gap is just short of significant. At medium density PPO only clearly beats DQN and random. In light traffic every driver ties, with 13–15 of 20 seeds finishing in exactly the same time, because there is nothing to overtake. The rule-based driver makes the fewest lane changes (1.5 per minute on high); random makes 12.3 with no collisions, because SUMO refuses its unsafe requests. On the gauntlet, which floods the ego’s starting lane with slow cars, every agent averages 30.4–30.6 s: once unsafe merges are blocked, escaping is easy.',
     },
     {
       title: 'Return stopped measuring anything',
@@ -160,7 +160,7 @@ const x: ProjectPage = {
         group: 'agents',
         summary: 'Random, greedy and safe-rule drivers to compare against.',
         details:
-          'Three hand-written policies implement the same Policy protocol as the learned agents, so every comparison runs through the same code path. `safe_rule` makes the fewest lane changes in the final results; PPO finishes fastest.',
+          'Three hand-written policies implement the same Policy protocol as the learned agents, so every comparison runs through the same code path. `safe_rule` makes the fewest lane changes in the final results; PPO is about a second faster in heavy traffic, and everyone ties in light traffic.',
         tech: ['Python'],
         codePath: 'laneiq/agents/baselines/safe_rule_agent.py',
       },
