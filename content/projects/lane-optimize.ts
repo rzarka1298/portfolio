@@ -5,14 +5,14 @@ const x: ProjectPage = {
   title: 'Lane-Optimize (LaneIQ)',
   tagline:
     'Reinforcement learning for highway lane changes in SUMO: a from-scratch DQN, MaskablePPO and shared-policy multi-agent PPO, benchmarked against rule-based drivers and streamed live to a browser.',
-  status: 'Personal project · 8-week build',
+  status: 'Personal project · 10-week build',
   summary: [
     'LaneIQ wraps a hand-authored SUMO 3-lane highway in a Gymnasium environment. Every 100 ms of simulated time an ego vehicle picks one of three actions (STAY, CHANGE_LEFT, CHANGE_RIGHT) and is rewarded for speed and penalized for lane changes, jerk, tailgating and collisions.',
     'Three families of learned policy share one `Policy` protocol with three rule-based baselines: a DQN written from scratch in PyTorch, Stable-Baselines3 MaskablePPO, and a parameter-sharing PPO trained over a PettingZoo environment with several egos in one scene.',
     'A reproducible evaluation matrix (agents × densities × seeds) writes every result to CSV. A FastAPI service runs one live simulation with any baseline or checkpoint and streams per-tick state over a WebSocket to a React dashboard.',
   ],
   problem: [
-    'Rule-based lane-change logic is easy to reason about, but it is hard to tell how much a learned policy actually improves on it. Small evaluations also hide rare failures: a policy that looks perfectly safe over 5 seeds can still crash in dense traffic.',
+    'Rule-based lane-change logic is easy to reason about, but it is hard to tell how much a learned policy actually improves on it. Evaluations also mislead in quieter ways: an agent can look safe for the wrong reason, and the numbers only change once someone checks what it actually sees.',
     'The project asks a narrow, measurable question: given realistic background traffic at three densities, when should the ego change lanes? It answers it with the same environment, metrics and seeds for every agent, so the comparison is like-for-like.',
   ],
   highlights: [
@@ -29,8 +29,20 @@ const x: ProjectPage = {
       body: 'The 25-dim observation packs (left_ok, right_ok) into one scalar slot. `valid_actions_mask` decodes it for the DQN, and `env.action_masks()` exposes it to MaskablePPO, which then never samples an impossible lane change.',
     },
     {
-      title: 'More seeds changed the conclusion',
-      body: 'In the project’s 20-seed final matrix (5 agents × 3 densities × 20 seeds), the safety-weighted PPO (`w_collision=-100`, 150k steps) recorded no collisions at any density. The default-reward PPO looked equally safe at 5 seeds but crashed in 3 of 20 high-density episodes, even though it had trained for 500k steps.',
+      title: 'A mirrored-perception bug made the safest agent a fake',
+      body: 'The side-lane observations read TraCI’s `getNeighbors` left/right bit backwards, so every agent trained before the fix saw the adjacent lanes swapped in the middle lane and always empty from the edge lanes. The PPO that had recorded 0% collisions everywhere was safe because it had learned not to change lanes, not because it changed lanes safely. A new test now checks the observed side slots against SUMO’s true lane positions.',
+    },
+    {
+      title: 'A cooldown the policy can see',
+      body: 'Retrained on correct inputs, agents dithered at up to 161 lane changes per minute, because one change cost only 5% of a step’s speed reward. A 1.5 s lane-change cooldown, folded into the packed lane-validity slot so even the unmasked multi-agent policy sees it, plus a 20× lane-change cost brought that down to roughly 2–6 per minute.',
+    },
+    {
+      title: 'The honest result: the rule still wins',
+      body: 'Over the 20-seed final matrix (5 agents × 3 densities × 20 seeds), the hand-written safe-driving rule records 0% collisions at every density and the best return. The canonical PPO (`w_collision=-100`, `w_lane_cost=-1`, 150k steps) crashes in 5% / 5% / 15% of low, medium and high-density episodes. Its crashes are unsafe lane changes, usually in the first few seconds after it joins a crowded road. Longer training made high density worse in both runs that tried it.',
+    },
+    {
+      title: 'Where learning does help: the gauntlet',
+      body: 'The gauntlet scenario floods the ego’s starting lane with slow cars. A PPO trained on it escapes in the first seconds and averages 33.1 m/s with 5% collisions over 20 seeds; on some seeds the standard PPO never leaves the slow lane. Changing the environment, not the reward, is what produced overtaking.',
     },
     {
       title: 'One live sim, one stream format',
@@ -92,7 +104,7 @@ const x: ProjectPage = {
         group: 'env',
         summary: 'Gymnasium env: 25-dim observation, 3 discrete actions, 6-term reward.',
         details:
-          'On reset it runs 50 warmup steps, adds the ego and disables its automatic lane changes. Each step applies the action (changeLane over 1.0 s), advances SUMO by 0.1 s, builds the observation (ego state, per-lane leader/follower gaps and speeds, lane density, packed lane-validity mask, distance left) and computes the reward.\n\nReward (rewards.py): +speed/v_max, −0.05 per lane change, −0.2 × normalized jerk, −0.5 when time headway is under 1.5 s, −50 on collision, and +0.01 per step for staying alive. The components sum exactly to the total and are reported in `info`.',
+          'On reset it runs 50 warmup steps, adds the ego and disables its automatic lane changes. Each step gates the action through a 1.5 s lane-change cooldown, applies it (changeLane over 1.0 s), advances SUMO by 0.1 s, builds the observation (ego state, per-lane leader/follower gaps and speeds, lane density, packed lane-validity mask, distance left) and computes the reward.\n\nReward (rewards.py): +speed/v_max, −0.05 per lane change by default (−1 for the canonical agents), −0.2 × normalized jerk, −0.5 when time headway is under 1.5 s, −50 on collision, and +0.01 per step for staying alive. The components sum exactly to the total and are reported in `info`.',
         tech: ['Gymnasium', 'NumPy', 'TraCI'],
         codePath: 'laneiq/env/highway_env.py',
       },
@@ -144,7 +156,7 @@ const x: ProjectPage = {
         group: 'agents',
         summary: 'Random, greedy and safe-rule drivers to compare against.',
         details:
-          'Three hand-written policies implement the same Policy protocol as the learned agents, so every comparison runs through the same code path. `safe_rule` is the strongest conventional heuristic in the results.',
+          'Three hand-written policies implement the same Policy protocol as the learned agents, so every comparison runs through the same code path. With correct perception, `safe_rule` is the safest agent in the final results and has the best return.',
         tech: ['Python'],
         codePath: 'laneiq/agents/baselines/safe_rule_agent.py',
       },
@@ -295,7 +307,7 @@ const x: ProjectPage = {
           {
             nodeId: 'evalm',
             title: 'Aggregate to CSV',
-            caption: 'Per-episode metrics are aggregated to mean ± std per cell. Going from 5 to 20 seeds is what exposed the default-reward PPO’s high-density crashes.',
+            caption: 'Per-episode metrics, including the lane changes the env actually executed, are aggregated to mean ± std per cell over 20 seeds.',
           },
         ],
       },

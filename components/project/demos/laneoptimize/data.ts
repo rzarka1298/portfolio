@@ -6,7 +6,7 @@
  * diverges only once the ego's own moves change what the cars around it do.
  */
 
-export type ScenarioId = 'high_s14' | 'high_s1' | 'gauntlet_s3';
+export type ScenarioId = 'high_s0' | 'high_s14' | 'gauntlet_s6';
 
 /** Index into `Action` labels: 0 stay, 1 change left, 2 change right, -1 no decision. */
 export type ActionCode = -1 | 0 | 1 | 2;
@@ -51,35 +51,35 @@ export interface ScenarioMeta {
 
 export const SCENARIOS: ScenarioMeta[] = [
   {
+    id: 'high_s0',
+    tab: 'Dense · seed 0',
+    title: 'High density, seed 0',
+    blurb:
+      'A crowded road where only the rule-based driver finishes. PPO cuts into a car 5 s in; greedy and DQN last 22 s and 28 s.',
+    defaultAgent: 'ppo_v12_safety_cd_150k',
+  },
+  {
     id: 'high_s14',
     tab: 'Dense · seed 14',
     title: 'High density, seed 14',
     blurb:
-      'The ego joins a crowded road. Three of the four other drivers crash within about a second; DQN lasts 10.8 s.',
-    defaultAgent: 'ppo_v2_safety_heavy_150k',
+      'Same density, different traffic. PPO makes three lane changes and posts the best return of any driver; DQN crashes at 15 s.',
+    defaultAgent: 'ppo_v12_safety_cd_150k',
   },
   {
-    id: 'high_s1',
-    tab: 'Dense · seed 1',
-    title: 'High density, seed 1',
+    id: 'gauntlet_s6',
+    tab: 'Gauntlet · seed 6',
+    title: 'Gauntlet, seed 6',
     blurb:
-      'Same density, different traffic. Greedy survives but changes lanes 300 times; PPO changes once and is fastest.',
-    defaultAgent: 'greedy',
-  },
-  {
-    id: 'gauntlet_s3',
-    tab: 'Gauntlet · seed 3',
-    title: 'Gauntlet, seed 3',
-    blurb:
-      'The ego starts in a lane packed with slow cars. The default PPO never leaves it. The gauntlet-trained PPO escapes in one move, as does the rule-based driver.',
-    defaultAgent: 'ppo_v2_safety_heavy_150k',
+      'The ego starts in a lane packed with slow cars. On this seed the standard PPO never leaves it; the gauntlet-trained PPO and the rule-based driver escape in the first seconds.',
+    defaultAgent: 'ppo_v12_safety_cd_150k',
   },
 ];
 
 const loaders: Record<ScenarioId, () => Promise<{ default: unknown }>> = {
+  high_s0: () => import('./scenarios/high_s0.json'),
   high_s14: () => import('./scenarios/high_s14.json'),
-  high_s1: () => import('./scenarios/high_s1.json'),
-  gauntlet_s3: () => import('./scenarios/gauntlet_s3.json'),
+  gauntlet_s6: () => import('./scenarios/gauntlet_s6.json'),
 };
 
 const cache = new Map<ScenarioId, Promise<Scenario>>();
@@ -126,7 +126,8 @@ export const DRIVER_NOTE: Record<string, string> = {
   random: 'Uniformly random legal action every 100 ms.',
   greedy: 'Moves to whichever reachable lane has the fastest leader. No gap check.',
   safe_rule: 'Changes lanes only when the target lane is faster and clear (30 m ahead, 20 m behind).',
-  dqn_v3_mixed_200k: 'From-scratch Double DQN, 200k steps on mixed densities.',
-  ppo_v2_safety_heavy_150k: 'MaskablePPO, 150k steps, collision penalty doubled to −100. The canonical agent.',
-  ppo_v5_gauntlet_300k: 'MaskablePPO, 300k steps trained on the gauntlet with the default reward.',
+  dqn_v4_mixed_200k_obsfix: 'From-scratch Double DQN, 200k steps on mixed densities.',
+  ppo_v12_safety_cd_150k:
+    'MaskablePPO, 150k steps, collision penalty −100, lane-change cost −1, 1.5 s cooldown. The canonical agent.',
+  ppo_v10_gauntlet_cd_300k: 'MaskablePPO, 300k steps trained on the gauntlet, lane-change cost −1, 1.5 s cooldown.',
 };

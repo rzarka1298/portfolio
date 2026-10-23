@@ -176,7 +176,8 @@ export default function LaneOptimizeReplay() {
 
   const ego = run ? egoAt(run, tick) : null;
   const action: ActionCode = run ? run.a[tick] ?? -1 : -1;
-  const ret = series ? series.cum[tick].reduce((s, x) => s + x, 0) : 0;
+  const cumNow = series?.cum[tick];
+  const ret = cumNow ? cumNow.reduce((s, x) => s + x, 0) : 0;
   const crashed = !!run && atEnd && run.outcome === 'collision';
   const finished = !!run && atEnd && run.outcome === 'finished';
 
@@ -366,7 +367,7 @@ export default function LaneOptimizeReplay() {
               <span className="bp-label text-bp-ink-dim">Reward so far, by term</span>
               <ul className="mt-2 space-y-1.5">
                 {scenario.rewardKeys.map((k, ki) => {
-                  const val = series.cum[tick][ki];
+                  const val = cumNow?.[ki] ?? 0;
                   const w = Math.min(50, (Math.abs(val) / series.maxAbs) * 50);
                   return (
                     <li key={k} className="grid grid-cols-[6.5rem_1fr_3.5rem] items-center gap-2 text-xs">
@@ -426,8 +427,9 @@ export default function LaneOptimizeReplay() {
             </table>
           </div>
           <p className="text-[11px] leading-relaxed text-bp-ink-dim">
-            One seed per scenario, chosen to show the drivers diverging. Across the full 20-seed matrix the PPO was the
-            only single-agent policy with no collisions at any density. Recorded with{' '}
+            One seed per scenario, chosen to show the drivers diverging. Across the full 20-seed matrix the rule-based
+            driver had no collisions at any density; the PPO crashed in 5% / 5% / 15% of low, medium and high-density
+            episodes. Recorded with{' '}
             <code className="font-mono">scripts/record_replay.py</code>; time counts from when the ego joins the road.
           </p>
         </>

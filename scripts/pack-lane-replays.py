@@ -2,8 +2,8 @@
 
 Record the inputs in the Lane-Optimize repo, one per (scenario, agent), e.g.
 
-    uv run python -m scripts.record_replay --agent ppo_v2_safety_heavy_150k \
-        --density high --seed 14 --out <replays>/high_s14_ppo_v2_safety_heavy_150k.json
+    uv run python -m scripts.record_replay --agent ppo_v12_safety_cd_150k \
+        --density high --seed 14 --out <replays>/high_s14_ppo_v12_safety_cd_150k.json
 
 then run, from this repo:
 
@@ -20,14 +20,15 @@ DRIVERS = {
     "random": "Random",
     "greedy": "Greedy",
     "safe_rule": "Rule-based",
-    "dqn_v3_mixed_200k": "DQN",
-    "ppo_v2_safety_heavy_150k": "PPO",
-    "ppo_v5_gauntlet_300k": "PPO (gauntlet-trained)",
+    "dqn_v4_mixed_200k_obsfix": "DQN",
+    "ppo_v12_safety_cd_150k": "PPO",
+    "ppo_v10_gauntlet_cd_300k": "PPO (gauntlet-trained)",
 }
+DENSE = ["random", "greedy", "safe_rule", "dqn_v4_mixed_200k_obsfix", "ppo_v12_safety_cd_150k"]
 SCENARIOS = {
-    "high_s14": ("high", 14, ["random", "greedy", "safe_rule", "dqn_v3_mixed_200k", "ppo_v2_safety_heavy_150k"]),
-    "high_s1": ("high", 1, ["random", "greedy", "safe_rule", "dqn_v3_mixed_200k", "ppo_v2_safety_heavy_150k"]),
-    "gauntlet_s3": ("gauntlet", 3, ["greedy", "safe_rule", "ppo_v2_safety_heavy_150k", "ppo_v5_gauntlet_300k"]),
+    "high_s0": ("high", 0, DENSE),
+    "high_s14": ("high", 14, DENSE),
+    "gauntlet_s6": ("gauntlet", 6, ["greedy", "safe_rule", "ppo_v12_safety_cd_150k", "ppo_v10_gauntlet_cd_300k"]),
 }
 
 for sid, (density, seed, agents) in SCENARIOS.items():
