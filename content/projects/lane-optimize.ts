@@ -17,8 +17,8 @@ const x: ProjectPage = {
   ],
   highlights: [
     {
-      title: 'The policy is the only lane-change decider',
-      body: 'After a 50-step (5 s) warmup fills the road, the env inserts the ego with `traci.vehicle.add` and calls `setLaneChangeMode(ego, 0)`, turning off SUMO’s own lane-change logic for that car. Every lane change is the policy’s choice, so a bad decision can actually cause a collision, and the −50 collision term has to teach the agent to avoid it.',
+      title: 'The policy decides, SUMO checks the gap',
+      body: 'After a 50-step (5 s) warmup fills the road, the env inserts the ego with `traci.vehicle.add`, switches off SUMO’s own lane-change motivations for it and pins its speed factor to 1, so it can’t outrun the limit by a random draw. Only the policy asks for lane changes. SUMO still checks each request against the cars around it (lane-change mode 768), the way a car’s lane-change assist would, and refuses one that would cut into another car; the ego then holds its lane.',
     },
     {
       title: 'DQN from scratch, with a measured fix',
@@ -37,12 +37,16 @@ const x: ProjectPage = {
       body: 'Retrained on correct inputs, agents dithered at up to 161 lane changes per minute, because one change cost only 5% of a step’s speed reward. A 1.5 s lane-change cooldown, folded into the packed lane-validity slot so even the unmasked multi-agent policy sees it, plus a 20× lane-change cost brought that down to roughly 2–6 per minute.',
     },
     {
-      title: 'The honest result: the rule still wins',
-      body: 'Over the 20-seed final matrix (5 agents × 3 densities × 20 seeds), the hand-written safe-driving rule records 0% collisions at every density and the best return. The canonical PPO (`w_collision=-100`, `w_lane_cost=-1`, 150k steps) crashes in 5% / 5% / 15% of low, medium and high-density episodes. Its crashes are unsafe lane changes, usually in the first few seconds after it joins a crowded road. Longer training made high density worse in both runs that tried it.',
+      title: 'The simulator, not the policies, was causing the crashes',
+      body: 'Before the gap check, every TraCI lane change was carried out unchecked, and every collision in the results was one: the ego changing lanes into a car directly alongside it. Tested in SUMO with a car beside the ego, modes 0 and 1024 execute the change and crash; 256, 512 and 768 refuse it. The old code called 1024 “safety-checked”, which turned out to be wrong. With the check on, every agent has 0% collisions at every density over 20 seeds, and the comparison becomes who gets through traffic fastest.',
     },
     {
-      title: 'Where learning does help: the gauntlet',
-      body: 'The gauntlet scenario floods the ego’s starting lane with slow cars. A PPO trained on it escapes in the first seconds and averages 33.1 m/s with 5% collisions over 20 seeds; on some seeds the standard PPO never leaves the slow lane. Changing the environment, not the reward, is what produced overtaking.',
+      title: 'PPO is fastest, by about a second',
+      body: 'Over 20 seeds per density, the canonical PPO (`ppo_v12_safety_cd_150k`) finishes 1 km in 29.4 / 30.1 / 30.6 s at low / medium / high density, against 31.4–32.4 s for every other driver at high density. The rule-based driver makes the fewest lane changes (1.5 per minute on high); random makes 12.3 with no collisions, because SUMO refuses its unsafe requests. On the gauntlet, which floods the ego’s starting lane with slow cars, every agent averages 30.4–30.6 s: once unsafe merges are blocked, escaping is easy.',
+    },
+    {
+      title: 'Return stopped measuring anything',
+      body: 'The speed term is min(v / v_max, 1) per step and episodes end at 1 km, so over an episode it sums to about the same value for every driver: driving faster earns nothing. The +0.01 per-step alive bonus even favours arriving later. Results are ranked by finish time instead. Turning the alive bonus into a per-step time penalty and retraining made each retrained agent slower, probably because the per-step penalty for following under 1.5 s outweighed the time saved. That was a negative result, and the time-penalty agents were not promoted.',
     },
     {
       title: 'One live sim, one stream format',
@@ -104,7 +108,7 @@ const x: ProjectPage = {
         group: 'env',
         summary: 'Gymnasium env: 25-dim observation, 3 discrete actions, 6-term reward.',
         details:
-          'On reset it runs 50 warmup steps, adds the ego and disables its automatic lane changes. Each step gates the action through a 1.5 s lane-change cooldown, applies it (changeLane over 1.0 s), advances SUMO by 0.1 s, builds the observation (ego state, per-lane leader/follower gaps and speeds, lane density, packed lane-validity mask, distance left) and computes the reward.\n\nReward (rewards.py): +speed/v_max, −0.05 per lane change by default (−1 for the canonical agents), −0.2 × normalized jerk, −0.5 when time headway is under 1.5 s, −50 on collision, and +0.01 per step for staying alive. The components sum exactly to the total and are reported in `info`.',
+          'On reset it runs 50 warmup steps, adds the ego and disables its automatic lane changes; the changes the policy requests are gap-checked by SUMO (mode 768). Each step gates the action through a 1.5 s lane-change cooldown, applies it (changeLane over 1.0 s), advances SUMO by 0.1 s, builds the observation (ego state, per-lane leader/follower gaps and speeds, lane density, packed lane-validity mask, distance left) and computes the reward.\n\nReward (rewards.py): +speed/v_max, −0.05 per lane change by default (−1 for the canonical agents), −0.2 × normalized jerk, −0.5 when time headway is under 1.5 s, −50 on collision, and +0.01 per step for staying alive. The components sum exactly to the total and are reported in `info`.',
         tech: ['Gymnasium', 'NumPy', 'TraCI'],
         codePath: 'laneiq/env/highway_env.py',
       },
@@ -117,7 +121,7 @@ const x: ProjectPage = {
         group: 'env',
         summary: 'PettingZoo ParallelEnv with N concurrent egos in one SUMO scene.',
         details:
-          'Every ego gets its own observation, action and reward, and has SUMO lane-change mode 0, so each ego’s policy alone decides its lane changes. Used only for multi-agent training.',
+          'Every ego gets its own observation, action and reward, and the same gap-checked lane changes as the single-ego env. One shared policy decides every ego’s lane changes. Over 20 seeds with 4 egos it has 0% collisions per ego.',
         tech: ['PettingZoo'],
         codePath: 'laneiq/env/multi_agent_env.py',
       },
@@ -156,7 +160,7 @@ const x: ProjectPage = {
         group: 'agents',
         summary: 'Random, greedy and safe-rule drivers to compare against.',
         details:
-          'Three hand-written policies implement the same Policy protocol as the learned agents, so every comparison runs through the same code path. With correct perception, `safe_rule` is the safest agent in the final results and has the best return.',
+          'Three hand-written policies implement the same Policy protocol as the learned agents, so every comparison runs through the same code path. `safe_rule` makes the fewest lane changes in the final results; PPO finishes fastest.',
         tech: ['Python'],
         codePath: 'laneiq/agents/baselines/safe_rule_agent.py',
       },
@@ -264,7 +268,7 @@ const x: ProjectPage = {
           {
             edgeId: 'e-env-traci',
             title: 'Warm up and insert the ego',
-            caption: 'SUMO runs 50 steps to fill the road, then the ego is added and its own lane-change logic is switched off.',
+            caption: 'SUMO runs 50 steps to fill the road, then the ego is added, its own lane-change motivations are switched off and its lane-change requests are gap-checked.',
           },
           {
             nodeId: 'env',

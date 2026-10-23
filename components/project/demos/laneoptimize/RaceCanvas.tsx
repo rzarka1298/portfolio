@@ -191,26 +191,23 @@ export default function RaceCanvas({ rows, selected, roadM, posRef, label, onSel
       }
       ctx.textBaseline = 'top';
       ctx.fillStyle = palette.dim;
-      ctx.fillText('0', sx0, stripY + 6);
-      const endLabel = `${roadM} m`;
-      ctx.fillText(endLabel, sx1 - ctx.measureText(endLabel).width, stripY + 6);
+      ctx.fillText(`0–${roadM} m`, 8, stripY + 6);
 
-      // Group drivers at the same spot so their tags share one label.
+      // Group drivers within a few pixels so their tags share one label.
       const marks: { x: number; tags: string[]; on: boolean }[] = [];
       for (const r of all) {
         const done = pos >= r.run.v.length - 1;
         const { ego } = carsAt(r.run, pos);
         const x = toStrip(done ? roadM : ego ? ego.x : egoXBefore(r.run, Math.floor(pos)));
-        const same = marks.find((mk) => Math.abs(mk.x - x) < 2);
+        const same = marks.find((mk) => Math.abs(mk.x - x) < 6);
         if (same) {
           same.tags.push(r.tag);
           same.on = same.on || r.agent === sel;
         } else marks.push({ x, tags: [r.tag], on: r.agent === sel });
       }
       marks.sort((a, b) => a.x - b.x);
-      ctx.textBaseline = 'bottom';
-      let lastRight = -Infinity;
-      let up = true;
+      // Labels go above the line, else below it, else are left off (the rows name every driver).
+      const rowRight = [-Infinity, -Infinity];
       for (const mk of marks) {
         ctx.fillStyle = mk.on ? palette.ego : palette.ink;
         ctx.beginPath();
@@ -218,13 +215,12 @@ export default function RaceCanvas({ rows, selected, roadM, posRef, label, onSel
         ctx.fill();
         const text = mk.tags.join(' · ');
         const w = ctx.measureText(text).width;
-        let tx = Math.min(sx1 - w, Math.max(sx0, mk.x - w / 2));
-        // Alternate above/below when labels would collide.
-        up = tx < lastRight + 6 ? !up : true;
-        if (up) lastRight = tx + w;
-        tx = Math.min(sx1 - w, Math.max(sx0, mk.x - w / 2));
-        ctx.textBaseline = up ? 'bottom' : 'top';
-        ctx.fillText(text, tx, up ? stripY - 5 : stripY + 6);
+        const tx = Math.min(sx1 - w, Math.max(sx0, mk.x - w / 2));
+        const row = rowRight.findIndex((right) => tx >= right + 6);
+        if (row === -1) continue;
+        rowRight[row] = tx + w;
+        ctx.textBaseline = row === 0 ? 'bottom' : 'top';
+        ctx.fillText(text, tx, row === 0 ? stripY - 5 : stripY + 6);
       }
 
       // --- One compact road per driver, each following its own ego -----------

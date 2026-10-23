@@ -71,7 +71,7 @@ export const SCENARIOS: ScenarioMeta[] = [
     tab: 'Gauntlet · seed 14',
     title: 'Gauntlet, seed 14',
     blurb:
-      'The ego starts in the right lane behind a wall of slow cars. Greedy and both PPOs move two lanes left within 2 s and finish in 29.2 s. The rule-based driver and DQN only move one lane, stay in the middle traffic and arrive 3.5 s later.',
+      'The ego starts in the right lane behind a wall of slow cars. Greedy and both PPOs move two lanes left within 2 s and finish in 29.2 s, as does random. The rule-based driver and DQN only move one lane, stay in the middle traffic and arrive 3.5 s later.',
     defaultAgent: 'ppo_v10_gauntlet_cd_300k',
   },
 ];
